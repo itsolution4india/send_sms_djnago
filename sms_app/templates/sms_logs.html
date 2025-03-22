@@ -1,0 +1,49 @@
+{% extends 'sms_app/base.html' %}
+
+{% block title %}SMS Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">SMS Logs</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Message Type</th>
+                        <th>Request Type</th>
+                        <th>Status</th>
+                        <th>Content</th>
+                        <th>Receivers</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_at }}</td>
+                        <td>{{ log.get_msg_type_display }}</td>
+                        <td>{{ log.get_request_type_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if log.status == 'SENT' %}success{% elif log.status == 'PENDING' %}warning{% else %}danger{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                        <td>{{ log.content|truncatechars:50 }}</td>
+                        <td>{{ log.receiver|truncatechars:50 }}</td>
+                        <td>{{ log.response_data|truncatechars:50 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No SMS logs found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

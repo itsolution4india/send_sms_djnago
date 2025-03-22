@@ -1,0 +1,68 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env
+send_sms_env/
+.send_sms_env/
+myenv/
+.myenv/
+.venv/
+env/
+ENV/
+env.bak/
+*.pyc
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.py[cod]
+
+# Static and media files
+/staticfiles/
+/media/
+static/
+media/
+
+# Django cache and session files
+*.cache
+*.session
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Pipfile, Pipfile.lock (if you use pipenv)
+Pipfile.lock
+Pipfile
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# mypy type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pyenv
+.python-version
+
+# IDE settings
+.idea/
+.vscode/
+
+# Local environment variables
+.env
+*.env

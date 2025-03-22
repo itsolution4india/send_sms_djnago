@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - SMS System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .img_tag {
+        width: 200px;
+        height: 200px;
+        margin: auto;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="d-flex" style="gap: 5px;">
+    <div class="col-lg-4 col-md-6 mt-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="mb-0 ">Start Campaign</h6>
+            <p class="text-sm ">Send message in Bulk or individual</p>
+            <div class="pe-2">
+              <div class="chart">
+                <img class="img_tag" src="{% static 'img/send_sms.webp' %}" alt="">
+              </div>
+            </div>
+            <hr class="dark horizontal">
+            <div class="d-flex ">
+              
+                <div class="col-lg-3 col-sm-6 col-12 mt-sm-0 mt-2 w-100">
+                    <a href="/start-campaign">
+                        <button class="btn bg-gradient-info w-100 mb-0 toast-btn" type="button" data-target="infoToast">Start Campaign</button>
+                    </a>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-lg-4 col-md-6 mt-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="mb-0 ">Check Reports</h6>
+            <p class="text-sm ">Last Campaign Performance</p>
+            <div class="pe-2">
+              <div class="chart">
+                <img class="img_tag" src="{% static 'img/reports.webp' %}" alt="">
+              </div>
+            </div>
+            <hr class="dark horizontal">
+            <div class="d-flex ">
+              
+                <div class="col-lg-3 col-sm-6 col-12 mt-sm-0 mt-2 w-100">
+                    <a href="/reports">
+                        <button class="btn bg-gradient-info w-100 mb-0 toast-btn" type="button" data-target="infoToast">Check Reports</button>
+                    </a>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-lg-4 col-md-6 mt-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="mb-0 ">Schedule Campaign</h6>
+            <p class="text-sm ">Schedule campaign on specific date and time</p>
+            <div class="pe-2">
+              <div class="chart">
+                <img class="img_tag" src="{% static 'img/schedule.webp' %}" alt="">
+              </div>
+            </div>
+            <hr class="dark horizontal">
+            <div class="d-flex ">
+              
+              <div class="col-lg-3 col-sm-6 col-12 mt-sm-0 mt-2 w-100">
+                <a href="/schedule">
+                    <button class="btn bg-gradient-info w-100 mb-0 toast-btn" type="button" data-target="infoToast">Schedule Campaign</button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+{% endblock %}
