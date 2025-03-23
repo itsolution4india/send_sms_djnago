@@ -26,7 +26,14 @@ SECRET_KEY = 'django-insecure-srd69ic3otxx&k2%2xg@pjnpwwv+k^ccj25r0fkmcw9*ap2-a@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'www.sms.wtsdealnow.com',
+    '.wtsdealnow.com',
+    'localhost',
+    '127.0.0.1',
+    '217.145.69.172',
+    '[::1]'
+]
 
 
 # Application definition
