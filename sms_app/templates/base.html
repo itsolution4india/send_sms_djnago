@@ -25,6 +25,19 @@
     .br_2 {
         border: 2px solid rgb(160, 160, 160);
     }
+    .message_popup {
+      width: fit-content;
+      position: fixed;
+      right: 5%;
+      top: 5%;
+      z-index: 1;
+    }
+    .alert-error {
+      background-color: red;
+      background: red;
+      width: #fff;
+      font-size: 15px;
+    }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
@@ -62,15 +75,9 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/virtual-reality.html">
+          <a class="nav-link text-dark" href="/reports">
             <i class="material-symbols-rounded opacity-5">view_in_ar</i>
-            <span class="nav-link-text ms-1">Virtual Reality</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/rtl.html">
-            <i class="material-symbols-rounded opacity-5">format_textdirection_r_to_l</i>
-            <span class="nav-link-text ms-1">RTL</span>
+            <span class="nav-link-text ms-1">Reports</span>
           </a>
         </li>
         <li class="nav-item">
@@ -218,13 +225,15 @@
     {% endif %}
 
     <div class="container content">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+      {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-white" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close p-0 m-1 me-3" data-bs-dismiss="alert" aria-label="Close"><span class="text-dark bold h4">x</span></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+  
 
         {% block content %}{% endblock %}
     </div>

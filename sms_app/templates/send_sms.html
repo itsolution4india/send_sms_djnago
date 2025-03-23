@@ -1,129 +1,213 @@
-{% extends 'sms_app/base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Send SMS{% endblock %}
-
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .form-container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-top: 20px;
+    }
+    .phone-preview {
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        border: 10px solid #333;
+        max-width: 300px;
+        height: 500px;
+        margin: 0 auto;
+        overflow: hidden;
+        position: relative;
+    }
+    .phone-screen {
+        background-color: #fff;
+        height: 100%;
+        overflow: auto;
+        position: relative;
+    }
+    .phone-header {
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+        font-weight: bold;
+    }
+    .message-bubble {
+        background-color: #e5f7ff;
+        border-radius: 0px 10px 10px;
+        padding: 10px 15px;
+        margin: 10px;
+        max-width: 80%;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        position: relative;
+        display: inline-block;
+    }
+    .char-counter {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: right;
+    }
+    .phone-status-bar {
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .preview-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin: 5px 10px;
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Send SMS</h2>
-            </div>
-            <div class="card-body">
+<div class="container py-4">
+    <h5 class="mb-2">SMS Sender Panel</h5>
+    
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-lg-7">
+            <div class="form-container">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     
-                    <div class="form-section">
-                        <h4>Message Type</h4>
-                        <div class="mb-3">
-                            {% for radio in form.msg_type %}
-                            <div class="form-check">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                            {% if form.msg_type.errors %}
-                            <div class="text-danger">{{ form.msg_type.errors }}</div>
-                            {% endif %}
+                    <div class="mb-3">
+                        <label for="campaignName" class="form-label">Campaign Name:</label>
+                        <input type="text" class="form-control" id="campaignName" name="campaignName" placeholder="Enter campaign name" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="msgType" class="form-label">Message Type:</label>
+                            <select id="msgType" name="msgType" class="form-select">
+                                <option value="T">Transactional</option>
+                                <option value="P">Promotional</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="requestType" class="form-label">Request Type:</label>
+                            <select id="requestType" name="requestType" class="form-select">
+                                <option value="S">Single</option>
+                                <option value="B">Bulk</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <div class="form-section">
-                        <h4>Request Type</h4>
-                        <div class="mb-3">
-                            {% for radio in form.request_type %}
-                            <div class="form-check">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                            {% if form.request_type.errors %}
-                            <div class="text-danger">{{ form.request_type.errors }}</div>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3 single-number">
+                        <label for="receiver" class="form-label">Receiver (Single Number):</label>
+                        <input type="text" class="form-control" id="receiver" name="receiver" placeholder="Enter mobile number">
                     </div>
                     
-                    <div class="form-section" id="singleReceiverSection">
-                        <h4>Receiver</h4>
-                        <div class="mb-3">
-                            <label for="{{ form.receiver.id_for_label }}" class="form-label">Phone Numbers:</label>
-                            {{ form.receiver|add_class:"form-control" }}
-                            <div class="form-text">Enter phone numbers separated by commas (e.g., 8801812345678,8801912345678)</div>
-                            {% if form.receiver.errors %}
-                            <div class="text-danger">{{ form.receiver.errors }}</div>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3 bulk-upload d-none">
+                        <label for="csv_file" class="form-label">Upload CSV File:</label>
+                        <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv">
+                        <div class="form-text">CSV should contain mobile numbers in the first column</div>
                     </div>
-                    
-                    <div class="form-section" id="bulkReceiverSection">
-                        <h4>CSV Upload</h4>
-                        <div class="mb-3">
-                            <label for="{{ form.receiver_file.id_for_label }}" class="form-label">CSV File:</label>
-                            {{ form.receiver_file|add_class:"form-control" }}
-                            <div class="form-text">{{ form.receiver_file.help_text }}</div>
-                            {% if form.receiver_file.errors %}
-                            <div class="text-danger">{{ form.receiver_file.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h4>Message Content</h4>
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">Content:</label>
-                            {{ form.content|add_class:"form-control" }}
-                            {% if form.content.errors %}
-                            <div class="text-danger">{{ form.content.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                        {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
                     
                     <div class="mb-3">
-                        <button type="submit" class="btn btn-primary">Send SMS</button>
+                        <label for="content" class="form-label">Message Content:</label>
+                        <textarea class="form-control" id="content" name="content" rows="5" placeholder="Type your message here..."></textarea>
+                        <div class="char-counter mt-1">
+                            <span id="charCount">0</span> characters | <span id="msgCount">1</span> message(s)
+                        </div>
                     </div>
+                    
+                    <button type="submit" class="btn bg-gradient-info w-100 mb-0 toast-btn">
+                        <i class="fas fa-paper-plane me-2"></i>Send SMS
+                    </button>
                 </form>
+            </div>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="col-lg-5 mt-4">
+            <div class="phone-preview">
+                <div class="phone-status-bar">
+                    <span><i class="fas fa-signal"></i> Live</span>
+                    <span>12:00 PM</span>
+                    <span>100% <i class="fas fa-battery-full"></i></span>
+                </div>
+                <div class="phone-screen">
+                    <div class="phone-header">
+                        SMS Preview
+                    </div>
+                    <div class="preview-info">
+                        Campaign: <span id="previewCampaign">New Campaign</span>
+                    </div>
+                    <div class="preview-info">
+                        Type: <span id="previewType">Transactional</span>
+                    </div>
+                    <div class="message-bubble form-control" id="previewContent">
+                        Your message will appear here...
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Update preview and handle form interactions
     document.addEventListener('DOMContentLoaded', function() {
-        const requestTypeRadios = document.querySelectorAll('input[name="request_type"]');
-        const singleSection = document.getElementById('singleReceiverSection');
-        const bulkSection = document.getElementById('bulkReceiverSection');
+        const msgTypeSelect = document.getElementById('msgType');
+        const requestTypeSelect = document.getElementById('requestType');
+        const singleNumberDiv = document.querySelector('.single-number');
+        const bulkUploadDiv = document.querySelector('.bulk-upload');
+        const contentTextarea = document.getElementById('content');
+        const charCountSpan = document.getElementById('charCount');
+        const msgCountSpan = document.getElementById('msgCount');
+        const campaignNameInput = document.getElementById('campaignName');
         
-        function updateSections() {
-            const selectedValue = document.querySelector('input[name="request_type"]:checked').value;
-            if (selectedValue === 'S') {
-                singleSection.style.display = 'block';
-                bulkSection.style.display = 'none';
+        // Preview elements
+        const previewContent = document.getElementById('previewContent');
+        const previewType = document.getElementById('previewType');
+        const previewCampaign = document.getElementById('previewCampaign');
+        
+        // Handle request type change
+        requestTypeSelect.addEventListener('change', function() {
+            if (this.value === 'S') {
+                singleNumberDiv.classList.remove('d-none');
+                bulkUploadDiv.classList.add('d-none');
             } else {
-                singleSection.style.display = 'none';
-                bulkSection.style.display = 'block';
+                singleNumberDiv.classList.add('d-none');
+                bulkUploadDiv.classList.remove('d-none');
             }
-        }
-        
-        requestTypeRadios.forEach(radio => {
-            radio.addEventListener('change', updateSections);
         });
         
-        // Initial setup
-        updateSections();
+        // Update message character count
+        contentTextarea.addEventListener('input', function() {
+            const text = this.value;
+            const charCount = text.length;
+            charCountSpan.textContent = charCount;
+            
+            // Simple calculation for message count (160 chars per SMS)
+            const msgCount = charCount <= 0 ? 0 : Math.ceil(charCount / 160);
+            msgCountSpan.textContent = msgCount;
+            
+            // Update preview
+            previewContent.textContent = text || 'Your message will appear here...';
+        });
+        
+        // Update message type in preview
+        msgTypeSelect.addEventListener('change', function() {
+            previewType.textContent = this.options[this.selectedIndex].text;
+        });
+        
+        // Update campaign name in preview
+        campaignNameInput.addEventListener('input', function() {
+            previewCampaign.textContent = this.value || 'New Campaign';
+        });
     });
 </script>
 {% endblock %}

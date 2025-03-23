@@ -69,35 +69,23 @@ class CoinHistory(models.Model):
     def __str__(self):
         return f"Transaction {self.transaction_id} - {self.user.username}"
 
-class SMSLog(models.Model):
-    MSG_TYPES = [
-        ('T', 'Transactional'),
-        ('P', 'Promotional'),
-    ]
-    REQUEST_TYPES = [
-        ('S', 'Single'),
-        ('B', 'Bulk'),
-    ]
-    CONTENT_TYPES = [
-        (1, 'Regular'),
-        (2, 'Unicode'),
-    ]
-    STATUS_CHOICES = [
-        ('PENDING', 'Pending'),
-        ('SENT', 'Sent'),
-        ('FAILED', 'Failed'),
-    ]
-    
+
+class CampaignDetails(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    sender = models.CharField(max_length=255)
-    receiver = models.TextField()
+    campaign_id = models.CharField(max_length=12, unique=True)
+    msg_type = models.CharField(max_length=1)
+    request_type = models.CharField(max_length=1)
+    receiver = models.JSONField()  # To store list of receivers
     content = models.TextField()
-    msg_type = models.CharField(max_length=1, choices=MSG_TYPES)
-    request_type = models.CharField(max_length=1, choices=REQUEST_TYPES)
-    content_type = models.IntegerField(choices=CONTENT_TYPES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    response_data = models.TextField(null=True, blank=True)
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.created_at}"
+
+class ReportDetails(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    campaign_id = models.CharField(max_length=12)
+    report_id = models.CharField(max_length=12, unique=True)
+    status = models.CharField(max_length=20)
+    description = models.TextField()
+    msgCount = models.IntegerField()
+    errorCode = models.IntegerField()
+    messageId = models.CharField(max_length=255)

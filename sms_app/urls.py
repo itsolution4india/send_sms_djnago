@@ -6,8 +6,9 @@ urlpatterns = [
     path('', views.login_view, name='login'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('billing/', views.billing_view, name='billing'),
-    path('send-sms/', views.send_sms, name='send_sms'),
     path('logout/', views.logout_view, name='logout'),
-    path('send-sms/', views.send_sms, name='send_sms'),
-    path('sms-logs/', views.sms_logs, name='sms_logs'),
+    path('start-campaign/', views.SendSMSView.as_view(), name='send_sms'),
+    path('reports/', views.report_view, name='report_view'),
+    path('reports/delete/', views.delete_report, name='delete_report'),
+    path('reports/fetch_latest/', views.fetch_latest_report, name='fetch_latest'),
 ]
