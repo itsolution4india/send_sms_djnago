@@ -25,7 +25,6 @@ env.bak/
 # Static and media files
 /staticfiles/
 /media/
-static/
 media/
 
 # Django cache and session files
