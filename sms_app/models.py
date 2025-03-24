@@ -89,7 +89,7 @@ class ReportDetails(models.Model):
     msgCount = models.IntegerField()
     errorCode = models.IntegerField()
     messageId = models.CharField(max_length=255)
-    receiver = models.CharField(max_length=20) 
+    receiver = models.JSONField()  
     
     def __str__(self):
         return f"Report {self.report_id} - Status: {self.status}"
