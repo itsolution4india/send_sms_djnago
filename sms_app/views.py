@@ -210,9 +210,11 @@ class SendSMSView(View):
             "msgType": msg_type,
             "requestType": request_type,
             "content": content,
-            "campaign_id": campaign_id
+            "campaign_id": campaign_id,
+            "user_id": current_user.id
         }
-
+        
+        print(payload)
         url = "https://api.wtsdealnow.com/send_sms"
         headers = {
             'Authorization': f'Bearer {sender_info.token}',
@@ -221,6 +223,7 @@ class SendSMSView(View):
 
         # Send SMS and handle response
         response = requests.post(url, json=payload, headers=headers)
+        print(response.json())
         if response.status_code == 200:
             try:
                 campaign = CampaignDetails.objects.create(
@@ -235,7 +238,6 @@ class SendSMSView(View):
             except Exception as e:
                 print(e)
             api_response = response.json()
-            print(api_response)
             total_receivers = len(receiver_list)
 
             # Deduct coins based on the number of receivers
@@ -253,20 +255,6 @@ class SendSMSView(View):
                     reason=f"Sent SMS to {total_receivers} receivers.",
                     transaction_type='debit'
                 )
-
-                # Save Report Details for each response
-                for report in api_response['responses']:
-                    ReportDetails.objects.create(
-                        created_at=timezone.now(),
-                        user=request.user,
-                        campaign_id=campaign_id,
-                        report_id=''.join(random.choices(string.ascii_letters + string.digits, k=12)),
-                        status=report['status'],
-                        description=report['description'],
-                        msgCount=report['msgCount'],
-                        errorCode=report['errorCode'],
-                        messageId=report['messageId']
-                    )
 
                 messages.success(request, "SMS sent successfully!")
             else:
