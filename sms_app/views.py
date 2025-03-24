@@ -13,6 +13,7 @@ import requests
 from django.http import JsonResponse
 import random, string
 from django.db.models import Q
+from django.http import HttpResponse
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -392,3 +393,155 @@ def profile_view(request):
         }
         return render(request, 'profile.html', context)
     
+def download_report_csv(request):
+    # Get the report ID from the request
+    report_id = request.GET.get('report_id')
+    
+    # Initialize response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="report_{report_id}.csv"'
+    
+    # Create CSV writer
+    writer = csv.writer(response)
+    
+    # Write header row
+    writer.writerow([
+        'Created At', 'Campaign ID', 'Campaign Name', 'Message Type', 
+        'Request Type', 'Receiver', 'Content', 'Status', 'Message Count', 
+        'Error Code', 'Message ID'
+    ])
+    
+    # Fetch report details
+    report = ReportDetails.objects.get(id=report_id)
+    
+    # Fetch associated campaign details
+    try:
+        campaign = CampaignDetails.objects.get(campaign_id=report.campaign_id)
+        campaign_name = campaign.campaign_name
+        msg_type = campaign.msg_type
+        request_type = campaign.request_type
+        content = campaign.content
+    except CampaignDetails.DoesNotExist:
+        campaign_name = "N/A"
+        msg_type = "N/A"
+        request_type = "N/A"
+        content = "N/A"
+    
+    # Write a row for each receiver
+    if isinstance(report.receiver, list):
+        for receiver in report.receiver:
+            writer.writerow([
+                report.created_at,
+                report.campaign_id,
+                campaign_name,
+                msg_type,
+                request_type,
+                receiver,
+                content,
+                report.status,
+                1,
+                report.errorCode,
+                report.messageId
+            ])
+    else:
+        # If receiver is not a list (handling edge cases)
+        writer.writerow([
+            report.created_at,
+            report.campaign_id,
+            campaign_name,
+            msg_type,
+            request_type,
+            report.receiver,
+            content,
+            report.status,
+            1,
+            report.errorCode,
+            report.messageId
+        ])
+    
+    return response
+
+def download_all_reports_csv(request):
+    """Download all reports that match the current filter criteria"""
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    search_query = request.GET.get('search', '')
+    
+    # Get all reports based on filter
+    reports = ReportDetails.objects.all()
+    
+    if start_date:
+        reports = reports.filter(created_at__gte=start_date)
+    if end_date:
+        reports = reports.filter(created_at__lte=end_date)
+    
+    if search_query:
+        reports = reports.filter(
+            Q(campaign_id__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Initialize response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="all_reports.csv"'
+    
+    # Create CSV writer
+    writer = csv.writer(response)
+    
+    # Write header row
+    writer.writerow([
+        'Created At', 'Campaign ID', 'Campaign Name', 'Message Type', 
+        'Request Type', 'Receiver', 'Content', 'Status', 'Message Count', 
+        'Error Code', 'Message ID'
+    ])
+    
+    # Write data rows
+    for report in reports:
+        # Fetch associated campaign details
+        try:
+            campaign = CampaignDetails.objects.get(campaign_id=report.campaign_id)
+            campaign_name = campaign.campaign_name
+            msg_type = campaign.msg_type
+            request_type = campaign.request_type
+            content = campaign.content
+        except CampaignDetails.DoesNotExist:
+            campaign_name = "N/A"
+            msg_type = "N/A"
+            request_type = "N/A"
+            content = "N/A"
+        
+        # Write a row for each receiver
+        if isinstance(report.receiver, list):
+            for receiver in report.receiver:
+                writer.writerow([
+                    report.created_at,
+                    report.campaign_id,
+                    campaign_name,
+                    msg_type,
+                    request_type,
+                    receiver,
+                    content,
+                    report.status,
+                    report.msgCount,
+                    report.errorCode,
+                    report.messageId
+                ])
+        else:
+            # If receiver is not a list (handling edge cases)
+            writer.writerow([
+                report.created_at,
+                report.campaign_id,
+                campaign_name,
+                msg_type,
+                request_type,
+                report.receiver,
+                content,
+                report.status,
+                report.msgCount,
+                report.errorCode,
+                report.messageId
+            ])
+    
+    return response

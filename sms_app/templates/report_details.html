@@ -22,6 +22,11 @@
                 <button type="submit" class="btn btn-info btn-sm btn-fetch-latest mb-1">Filter data</button>
             </div>
         </form>
+        <!-- <div class="mb-3">
+            <a href="{% url 'download_all_reports_csv' %}?start_date={{ start_date }}&end_date={{ end_date }}&search={{ search_query }}" class="btn btn-success">
+                <i class="fa fa-download"></i> Download All Reports
+            </a>
+        </div> -->
      </div>
 
     <!-- Reports Table -->
@@ -54,6 +59,9 @@
                         <td>
                             <button class="btn btn-danger btn-sm btn-delete" data-id="{{ report.id }}">Delete</button>
                             <!-- <button class="btn btn-info btn-sm btn-fetch-latest" data-id="{{ report.id }}" data-msgid="{{ report.messageId }}" data-receiver="{{ report.receiver }}">Fetch Latest</button> -->
+                            <a href="{% url 'download_report_csv' %}?report_id={{ report.id }}" class="btn btn-primary btn-sm">
+                                <i class="fa fa-download"></i> Download
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
