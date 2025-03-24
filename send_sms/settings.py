@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from django.utils.log import DEFAULT_LOGGING
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -148,27 +149,48 @@ LOGIN_URL = '/'
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'INFO',  # You can change this to DEBUG if needed
             'class': 'logging.FileHandler',
-            'filename': 'scheduler.log',
+            'filename': os.path.join(LOGS_DIR, 'app.logs'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
-            'level': 'INFO',
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Change to 'DEBUG' for more detailed logging
             'propagate': True,
         },
-        'apscheduler': {
-            'handlers': ['file'],
+        'sms_app_logger': {  # Custom logger for your sms_app
+            'handlers': ['file', 'console'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
     },
 }
-

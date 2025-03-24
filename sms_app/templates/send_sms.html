@@ -210,4 +210,15 @@
         });
     });
 </script>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var dashboardLink = document.getElementById('Campaign');
+    if (dashboardLink) {
+      dashboardLink.classList.add('active');
+    }
+  });
+</script>
+{% endblock %}
 {% endblock %}

@@ -158,7 +158,7 @@ def billing_view(request):
     page_number = request.GET.get('page')
     transactions = paginator.get_page(page_number)
 
-    return render(request, 'billing.html', {'transactions': transactions, 'account': account})
+    return render(request, 'billing.html', {'transactions': transactions, 'account': account, "user": user})
 
 
 class SendSMSView(View):
@@ -348,3 +348,47 @@ def fetch_latest_report(request):
         else:
             messages.error(request, "Failed to refresh report")
             return redirect('report_view')
+        
+# @login_required
+# def profile_view(request):
+#     user = request.user
+#     account = user.account_set.first()
+#     sender_id = user.sender_id
+    
+#     context = {
+#         'user': user,
+#         'account': account,
+#         'sender_id': sender_id
+#     }
+#     return render(request, 'profile.html', context)
+
+@login_required
+def profile_view(request):
+    """
+    View to display user profile information including account details.
+    Requires user to be logged in.
+    """
+    user = request.user
+    try:
+        # Get the account related to the logged-in user
+        account = Account.objects.get(user=user)
+        
+        # Get the first letter of account holder name for the logo
+        first_letter = account.account_holder_name[0].upper() if account.account_holder_name else user.username[0].upper()
+        
+        context = {
+            'user': user,
+            'account': account,
+            'first_letter': first_letter,
+        }
+        return render(request, 'profile.html', context)
+    except Account.DoesNotExist:
+        # Handle case where user doesn't have an account
+        first_letter = user.username[0].upper()
+        context = {
+            'user': user,
+            'first_letter': first_letter,
+            'no_account': True
+        }
+        return render(request, 'profile.html', context)
+    

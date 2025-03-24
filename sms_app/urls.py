@@ -11,4 +11,5 @@ urlpatterns = [
     path('reports/', views.report_view, name='report_view'),
     path('reports/delete/', views.delete_report, name='delete_report'),
     path('reports/fetch_latest/', views.fetch_latest_report, name='fetch_latest'),
+    path('profile/', views.profile_view, name='profile'),
 ]

@@ -1,0 +1,142 @@
+<!-- templates/profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-info text-white d-flex justify-content-center align-items-center mx-auto" style="width: 150px; height: 150px; font-size: 72px;">
+                            {{ first_letter }}
+                        </div>
+                    </div>
+                    <h5 class="my-3">{{ user.username }}</h5>
+                    <p class="text-muted mb-1">
+                        {% if user.sender_id %}
+                        Sender ID: {{ user.sender_id.sender_id }}
+                        {% else %}
+                        No Sender ID
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-center mb-2">
+                        <button type="button" class="btn btn-info">Edit Profile</button>
+                        <button type="button" class="btn btn-outline-info ms-1">Change Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h5 class="mb-0">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Email</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Phone</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ user.phone_number }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Username</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ user.username }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if not no_account %}
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h5 class="mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Account ID</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ account.account_id }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Account Number</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ account.account_number }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Account Holder</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">{{ account.account_holder_name }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">GUI Balance</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">${{ account.gui_balance }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">API Balance</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">${{ account.api_balance }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <p class="text-muted mb-0">No account information available</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var dashboardLink = document.getElementById('Profile');
+    if (dashboardLink) {
+      dashboardLink.classList.add('active');
+    }
+  });
+</script>
+{% endblock %}
+{% endblock %}

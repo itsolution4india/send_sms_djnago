@@ -86,4 +86,17 @@
         </div>
       </div>
 </div>
+
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var dashboardLink = document.getElementById('Dashboard');
+    if (dashboardLink) {
+      dashboardLink.classList.add('active');
+    }
+  });
+</script>
+{% endblock %}
+
 {% endblock %}
