@@ -209,10 +209,11 @@ class SendSMSView(View):
             "receiver": receiver_list,
             "msgType": msg_type,
             "requestType": request_type,
-            "content": content
+            "content": content,
+            "campaign_id": campaign_id
         }
 
-        url = "https://send-sms-fastapi.vercel.app/send_sms"
+        url = "https://api.wtsdealnow.com/send_sms"
         headers = {
             'Authorization': f'Bearer {sender_info.token}',
             'Content-Type': 'application/json'
