@@ -230,6 +230,7 @@ class SendSMSView(View):
                     created_at=timezone.now(),
                     user=request.user,
                     campaign_id=campaign_id,
+                    campaign_name= campaign_name,
                     msg_type=msg_type,
                     request_type=request_type,
                     receiver=receiver_list,

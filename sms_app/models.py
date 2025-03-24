@@ -74,6 +74,7 @@ class CampaignDetails(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     campaign_id = models.CharField(max_length=12, unique=True)
+    campaign_name = models.CharField(max_length=60)
     msg_type = models.CharField(max_length=1)
     request_type = models.CharField(max_length=1)
     receiver = models.JSONField()  # To store list of receivers
