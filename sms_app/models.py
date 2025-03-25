@@ -94,3 +94,32 @@ class ReportDetails(models.Model):
     
     def __str__(self):
         return f"Report {self.report_id} - Status: {self.status}"
+    
+class ApiCredentials(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    token = models.TextField()
+    refresh_token = models.TextField()
+    token_updated_date = models.DateTimeField()
+    
+    def __str__(self):
+        return f"Report {self.user} - Status: {self.username}"
+    
+class SendSmsApiResponse(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20)
+    description = models.TextField()
+    content_type = models.IntegerField()
+    errorCode = models.IntegerField()
+    actual_msgCount = models.IntegerField()
+    actual_messageId = models.CharField(max_length=255)
+    actual_current_balance = models.IntegerField()
+    user_msgCount = models.IntegerField()
+    user_messageId = models.CharField(max_length=255)
+    user_current_balance = models.IntegerField()
+    
+    def __str__(self):
+        return f"actual_messageId {self.actual_messageId} - user_messageId {self.user_messageId} - Status: {self.status}"
