@@ -393,6 +393,10 @@ def profile_view(request):
         }
         return render(request, 'profile.html', context)
     
+@login_required
+def api_documentation(request):
+    return render(request, 'api_documentation.html')
+    
 def download_report_csv(request):
     # Get the report ID from the request
     report_id = request.GET.get('report_id')
