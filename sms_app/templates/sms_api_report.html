@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4>SMS API Report</h4>
+    
+    <!-- Date Range Filter Form -->
+    <form method="GET" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Start Date</label>
+                <input type="date" name="start_date" class="form-control" 
+                       value="{{ start_date|date:'Y-m-d' }}" 
+                       max="{{ end_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label>End Date</label>
+                <input type="date" name="end_date" class="form-control" 
+                       value="{{ end_date|date:'Y-m-d' }}"
+                       max="{% now 'Y-m-d' %}">
+            </div>
+            <div class="col-md-4 align-self-end">
+                <button type="submit" class="btn btn-info mb-1">Filter</button>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Statistics Table -->
+    <div class="row">
+        <div class="col-md-6 card p-2">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Campaign Name</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.campaign_name }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Status</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.status }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Total Error Code</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.total_error_code }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">SMS Count</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.sms_count }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">No. of Promotional SMS</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.promotional_sms }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">No. of Transactional SMS</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.transactional_sms }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Reach</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.reach }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Total Amount Spent</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ stats.total_amount }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">Start Date</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ start_date|date:'Y-m-d' }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">End Date</p>
+                        </td>
+                        <td>
+                            <p class="text-sm font-weight-bold mb-0">{{ end_date|date:'Y-m-d' }}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Charts Container -->
+        <div class="col-md-6 card p-2">
+            <div class="chart-container" style="position: relative; height:60vh; width:100%; margin: auto;">
+                <canvas id="smsTypeChart" style="margin: auto;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // SMS Type Pie Chart
+    var ctx = document.getElementById('smsTypeChart').getContext('2d');
+    var smsTypeChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: {{ sms_type_data.labels|safe }},
+            datasets: [{
+                data: {{ sms_type_data.counts|safe }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'SMS Type Distribution'
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

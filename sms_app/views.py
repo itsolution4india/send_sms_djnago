@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, CoinHistory, Account, SenderID, CampaignDetails, ReportDetails
+from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse
 from .forms import CoinHistoryForm
 import csv
 from django.views import View
@@ -14,6 +14,8 @@ from django.http import JsonResponse
 import random, string
 from django.db.models import Q
 from django.http import HttpResponse
+from datetime import datetime, timedelta
+from django.db.models import Count, Sum
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -549,3 +551,55 @@ def download_all_reports_csv(request):
             ])
     
     return response
+
+def sms_api_report(request):
+    # Default to last 30 days if no date range specified
+    end_date = request.GET.get('end_date')
+    start_date = request.GET.get('start_date')
+    
+    # Convert string dates to datetime objects
+    try:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date() if end_date else datetime.now().date()
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else (end_date - timedelta(days=30))
+    except (ValueError, TypeError):
+        # Fallback to default dates if parsing fails
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=30)
+    
+    # Filter queryset based on date range
+    queryset = SendSmsApiResponse.objects.filter(
+        created_at__date__range=[start_date, end_date]
+    )
+    
+    # Calculate total error codes by counting non-zero error codes
+    total_error_codes = queryset.exclude(errorCode=0).count()
+    
+    # Calculate statistics
+    stats = {
+        'campaign_name': 'API V2 Service',
+        'status': 'Running',
+        'total_error_code': total_error_codes,
+        'sms_count': queryset.aggregate(total_sms=Sum('user_msgCount'))['total_sms'] or 0,
+        'promotional_sms': queryset.filter(msg_type='P').count(),
+        'transactional_sms': queryset.filter(msg_type='T').count(),
+        'reach': queryset.aggregate(total_reach=Sum('user_msgCount'))['total_reach'] or 0,
+        'total_amount': queryset.aggregate(total_amount=Sum('user_msgCount'))['total_amount'] or 0,
+    }
+    
+    # Prepare data for charts
+    sms_type_data = {
+        'labels': ['Promotional', 'Transactional'],
+        'counts': [
+            queryset.filter(msg_type='P').count(),
+            queryset.filter(msg_type='T').count()
+        ]
+    }
+    
+    context = {
+        'stats': stats,
+        'sms_type_data': sms_type_data,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+    return render(request, 'sms_api_report.html', context)

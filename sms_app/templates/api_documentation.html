@@ -57,7 +57,7 @@
                                 </div>
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
-                                    <code>POST /token</code>
+                                    <code>POST /auth/token</code>
 
                                     <h6 class="mt-3">Request Parameters</h6>
                                     <table class="table table-bordered">
@@ -87,7 +87,7 @@
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="tokenCurl">curl -X POST https://api.example.com/token \
+                                        <pre><code id="tokenCurl">curl -X POST https://api.wtsdealnow.com/auth/token \
 -H "Content-Type: application/json" \
 -d '{"username": "your_username", "password": "your_password"}'</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('tokenCurl')">Copy</button>
@@ -110,7 +110,7 @@
                                 </div>
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
-                                    <code>POST /token/refresh</code>
+                                    <code>POST /auth/token/refresh</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
                                     <table class="table table-bordered">
@@ -132,7 +132,7 @@
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="refreshCurl">curl -X POST https://api.example.com/token/refresh \
+                                        <pre><code id="refreshCurl">curl -X POST https://api.wtsdealnow.com/auth/token/refresh \
 -H "Authorization: Bearer your_refresh_token"</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('refreshCurl')">Copy</button>
                                     </div>
@@ -160,7 +160,7 @@
                                 </div>
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
-                                    <code>POST /send</code>
+                                    <code>POST /sms/send</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
                                     <table class="table table-bordered">
@@ -232,7 +232,7 @@
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="smsCurl">curl -X POST https://api.example.com/send \
+                                        <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send \
 -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 -H "Content-Type: application/json" \
 -d '{
@@ -323,7 +323,7 @@
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="statusCurl">curl -X GET "https://api.example.com/sms/status?sender=SENDER_ID&messageId=MESSAGE_ID&receiver=1234567890" \
+                                        <pre><code id="statusCurl">curl -X GET "https://api.wtsdealnow.com/sms/status?sender=SENDER_ID&messageId=MESSAGE_ID&receiver=1234567890" \
 -H "Authorization: Bearer YOUR_ACCESS_TOKEN"</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('statusCurl')">Copy</button>
                                     </div>
@@ -389,7 +389,7 @@
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="balanceCurl">curl -X GET "https://api.example.com/account/balance?username=YOUR_USERNAME" \
+                                        <pre><code id="balanceCurl">curl -X GET "https://api.wtsdealnow.com/account/balance?username=YOUR_USERNAME" \
 -H "Authorization: Bearer YOUR_ACCESS_TOKEN"</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('balanceCurl')">Copy</button>
                                     </div>

@@ -15,4 +15,5 @@ urlpatterns = [
     path('download-report-csv/', views.download_report_csv, name='download_report_csv'),
     path('download-all-reports-csv/', views.download_all_reports_csv, name='download_all_reports_csv'),
     path('api_documentation/', views.api_documentation, name="api_documentation"),
+    path('sms-api-report/', views.sms_api_report, name='sms_api_report'),
 ]
