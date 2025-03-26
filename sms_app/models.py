@@ -120,6 +120,9 @@ class SendSmsApiResponse(models.Model):
     user_msgCount = models.IntegerField()
     user_messageId = models.CharField(max_length=255)
     user_current_balance = models.IntegerField()
+    receiver = models.JSONField()
+    content = models.TextField()
+    msg_type = models.CharField(max_length=1)
     
     def __str__(self):
         return f"actual_messageId {self.actual_messageId} - user_messageId {self.user_messageId} - Status: {self.status}"
