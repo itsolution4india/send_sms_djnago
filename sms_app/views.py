@@ -398,7 +398,8 @@ def profile_view(request):
 @login_required
 def api_documentation(request):
     return render(request, 'api_documentation.html')
-    
+
+@login_required   
 def download_report_csv(request):
     # Get the report ID from the request
     report_id = request.GET.get('report_id')
@@ -467,6 +468,7 @@ def download_report_csv(request):
     
     return response
 
+@login_required
 def download_all_reports_csv(request):
     """Download all reports that match the current filter criteria"""
     # Get filter parameters
@@ -552,6 +554,7 @@ def download_all_reports_csv(request):
     
     return response
 
+@login_required
 def sms_api_report(request):
     # Default to last 30 days if no date range specified
     end_date = request.GET.get('end_date')
@@ -568,7 +571,8 @@ def sms_api_report(request):
     
     # Filter queryset based on date range
     queryset = SendSmsApiResponse.objects.filter(
-        created_at__date__range=[start_date, end_date]
+        created_at__date__range=[start_date, end_date],
+        user=request.user
     )
     
     # Calculate total error codes by counting non-zero error codes
