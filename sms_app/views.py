@@ -17,6 +17,10 @@ from django.http import HttpResponse
 from datetime import datetime, timedelta
 from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+def admin_check(user):
+    return user.is_superuser
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -89,7 +93,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-@login_required
+@user_passes_test(admin_check, login_url='/login/')
 def admin_view(request):
     if request.method == 'POST':
         form = CoinHistoryForm(request.POST)
