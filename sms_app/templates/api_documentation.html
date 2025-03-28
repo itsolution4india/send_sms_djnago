@@ -27,6 +27,9 @@
     .nav-pills .nav-link.active {
         background-color: #0d6efd;
     }
+    thead, tbody, tfoot, tr, td, th {
+        padding: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -60,7 +63,7 @@
                                     <code>POST /auth/token</code>
 
                                     <h6 class="mt-3">Request Parameters</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -98,6 +101,28 @@
     "token": "access_token",
     "refresh_token": "refresh_token"
 }</code></pre>
+<table class="table-bordered">
+    <thead>
+      <tr>
+        <th>Parameter Name</th>
+        <th>Description</th>
+        <th>Validity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>token</td>
+        <td>Generated token to use as authorization value on the send SMS and other related APIs.</td>
+        <td>1 hour</td>
+      </tr>
+      <tr>
+        <td>refresh_token</td>
+        <td>Generated refresh token to refresh the authorization value. A new token will be generated. It is advised to use refresh_token to generate a new token instead of making a new token generate request (It may result in request limitation error).</td>
+        <td>1 hour</td>
+      </tr>
+    </tbody>
+  </table>
+  
                                 </div>
                             </div>
                         </div>
@@ -113,7 +138,7 @@
                                     <code>POST /auth/token/refresh</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -163,7 +188,7 @@
                                     <code>POST /sms/send</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -181,67 +206,60 @@
                                     </table>
 
                                     <h6>Request Parameters</h6>
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Type</th>
+                                        <table class="table-bordered">
+                                            <thead>
+                                              <tr>
+                                                <th>Parameter Name</th>
+                                                <th>Value (Data Type)</th>
                                                 <th>Description</th>
-                                                <th>Required</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              <tr>
                                                 <td>sender</td>
-                                                <td>string</td>
-                                                <td>Sender's phone number or ID</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
-                                                <td>receiver</td>
-                                                <td>array</td>
-                                                <td>List of recipient phone numbers</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
-                                                <td>contentType</td>
-                                                <td>string</td>
-                                                <td>Type of SMS content (e.g., TEXT)</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
-                                                <td>content</td>
-                                                <td>string</td>
-                                                <td>SMS message content</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
+                                                <td>Masking/Longcode/shortcode (String)</td>
+                                                <td>Sender ID/CLI (Masking/Longcode/shortcode)</td>
+                                              </tr>
+                                              <tr>
                                                 <td>msgType</td>
-                                                <td>string</td>
-                                                <td>Message type (optional)</td>
-                                                <td>No</td>
-                                            </tr>
-                                            <tr>
+                                                <td>T/P (String)</td>
+                                                <td>T = transactional, P = promotional (Only 1 can be used). “2” contentType must be selected for “P”.</td>
+                                              </tr>
+                                              <tr>
                                                 <td>requestType</td>
-                                                <td>string</td>
-                                                <td>Request type (optional)</td>
-                                                <td>No</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                                <td>S/B (String)</td>
+                                                <td>S = single, B = Bulk (Only 1 can be used)</td>
+                                              </tr>
+                                              <tr>
+                                                <td>contentType</td>
+                                                <td>1 / 2 (String)</td>
+                                                <td>1 = Regular, 2 = Unicode (Only 1 can be used). “P” msgType has to be in “2”.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>receiver</td>
+                                                <td>MSISDN (String)</td>
+                                                <td>13 digits MSISDN Number. The numbers which will receive the SMS. Numbers must be in an array.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>content</td>
+                                                <td>XXXX (String)</td>
+                                                <td>The text of the message.</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>                                          
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
                                         <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send \
--H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+-H "Authorization: Bearer your_refresh_token" \
 -H "Content-Type: application/json" \
 -d '{
     "sender": "SENDER_ID",
-    "receiver": ["1234567890"],
-    "contentType": "TEXT",
+    "receiver": ["8801234567890"],
+    "contentType": 1/2,
     "content": "Hello World!",
-    "msgType": "TRANSACTIONAL",
-    "requestType": "SINGLE"
+    "msgType": "T/P",
+    "requestType": "S/B"
 }'</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
                                     </div>
@@ -251,12 +269,64 @@
     "status": "SUCCESS",
     "description": "Message sent",
     "msgCost": "1",
-    "currentBalance": "99",
-    "contentType": "TEXT",
-    "msgCount": 1,
+    "currentBalance": "16",
+    "contentType": 1,
+    "msgCount": 2,
     "errorCode": 0,
-    "messageId": "UNIQUE_MESSAGE_ID"
+    "messageId": "519597002771788"
 }</code></pre>
+<h6>Response Parameters</h6>
+    <table class="table-bordered">
+        <thead>
+          <tr>
+            <th>Parameter Name</th>
+            <th>Response</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>status</td>
+            <td>SUCCESS/FAILED</td>
+            <td>Status of the SMS</td>
+          </tr>
+          <tr>
+            <td>description</td>
+            <td>Message Sent/Error</td>
+            <td>The SMS status details</td>
+          </tr>
+          <tr>
+            <td>msgCost</td>
+            <td>12.12345</td>
+            <td>The cost occurred for this request</td>
+          </tr>
+          <tr>
+            <td>currentBalance</td>
+            <td>123456.12345</td>
+            <td>Current Balance of the API Wallet after the API Request</td>
+          </tr>
+          <tr>
+            <td>contentType</td>
+            <td>1/2</td>
+            <td>Unicode (2) or Regular Text (1)</td>
+          </tr>
+          <tr>
+            <td>msgCount</td>
+            <td>1-10</td>
+            <td>The number of messages based on the character count</td>
+          </tr>
+          <tr>
+            <td>errorCode</td>
+            <td>1XXX</td>
+            <td>Error code will be shown if any invalid request or system malfunction occurs</td>
+          </tr>
+          <tr>
+            <td>messageId</td>
+            <td>XXXXXXXXXXXXX</td>
+            <td>16-32 Characters</td>
+          </tr>
+        </tbody>
+      </table>
                                 </div>
                             </div>
                         </div>
@@ -272,7 +342,7 @@
                                     <code>GET /sms/status</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -290,51 +360,102 @@
                                     </table>
 
                                     <h6>Query Parameters</h6>
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Type</th>
+                                        <table class="table-bordered">
+                                            <thead>
+                                              <tr>
+                                                <th>Parameter Name</th>
+                                                <th>Value (Data Type)</th>
                                                 <th>Description</th>
-                                                <th>Required</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              <tr>
                                                 <td>sender</td>
-                                                <td>string</td>
-                                                <td>Sender's phone number or ID</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
+                                                <td>Masking/Longcode/shortcode (String)</td>
+                                                <td>Sender ID/CLI (Masking/Longcode/shortcode)</td>
+                                              </tr>
+                                              <tr>
                                                 <td>messageId</td>
-                                                <td>string</td>
-                                                <td>Unique message ID from send SMS response</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                            <tr>
+                                                <td>XXXXXXXXXXXXX</td>
+                                                <td>16-32 Characters</td>
+                                              </tr>
+                                              <tr>
                                                 <td>receiver</td>
-                                                <td>string</td>
-                                                <td>Recipient's phone number</td>
-                                                <td>Yes</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                                <td>MSISDN (String)</td>
+                                                <td>13 digits MSISDN Number. The numbers which will receive the SMS. Numbers must be in an array.</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>                                          
 
                                     <h6>Sample cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="statusCurl">curl -X GET "https://api.wtsdealnow.com/sms/status?sender=SENDER_ID&messageId=MESSAGE_ID&receiver=1234567890" \
--H "Authorization: Bearer YOUR_ACCESS_TOKEN"</code></pre>
+                                        <pre><code id="statusCurl">curl -X GET "https://api.wtsdealnow.com/sms/status?sender=SENDER_ID&messageId=61327877333215XXXX&receiver=8801833XXXXXX" \
+-H "Authorization: Bearer token"</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('statusCurl')">Copy</button>
                                     </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
                                     <pre><code>{
-    "status": "DELIVERED",
-    "description": "Message delivered successfully",
+    "status": "SUCCESS",
+    "description": "Successfully transmitted",
     "msgCost": "1",
-    "messageId": "UNIQUE_MESSAGE_ID"
+    "contentType": 1,
+    "msgCount": 1,
+    "errorCode": 0,
+    "messageId": "519686425075064"
 }</code></pre>
+<table class="table-bordered">
+    <thead>
+      <tr>
+        <th>Parameter Name</th>
+        <th>Response</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>status</td>
+        <td>SUCCESS/FAILED</td>
+        <td>Status of the SMS</td>
+      </tr>
+      <tr>
+        <td>description</td>
+        <td>Successfully Transmitted/Undelivered/Delivery Pending</td>
+        <td>The SMS status details</td>
+      </tr>
+      <tr>
+        <td>msgCost</td>
+        <td>12.12345</td>
+        <td>The cost occurred for this request</td>
+      </tr>
+      <tr>
+        <td>duringMsgBalance</td>
+        <td>123456.12345</td>
+        <td>Balance of the API Wallet after the SMS API Request was made</td>
+      </tr>
+      <tr>
+        <td>contentType</td>
+        <td>1/2</td>
+        <td>13 digits MSISDN Number. The numbers which will receive the SMS. Numbers must be in an array.</td>
+      </tr>
+      <tr>
+        <td>msgCount</td>
+        <td>1-10</td>
+        <td>The number of messages based on the character count</td>
+      </tr>
+      <tr>
+        <td>errorCode</td>
+        <td>1XXX</td>
+        <td>Error code will be shown if any invalid request or system malfunction occurs</td>
+      </tr>
+      <tr>
+        <td>messageId</td>
+        <td>XXXXXXXXXXXXX</td>
+        <td>16-32 Characters</td>
+      </tr>
+    </tbody>
+  </table>
+  
                                 </div>
                             </div>
                         </div>
@@ -350,7 +471,7 @@
                                     <code>GET /account/balance</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -368,7 +489,7 @@
                                     </table>
 
                                     <h6>Query Parameters</h6>
-                                    <table class="table table-bordered">
+                                    <table class="table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -411,7 +532,7 @@
                                     <h5 class="text-white">Error Codes</h5>
                                 </div>
                                 <div class="card-body">
-                                    <table class="table table-striped table-bordered">
+                                    <table class="table-striped table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Error Code</th>
@@ -445,6 +566,101 @@
                                                 <td>Internal Server Error</td>
                                                 <td>Unexpected server-side error</td>
                                             </tr>
+                                            <tr>
+                                                <td>1501</td>
+                                                <td>Invalid Token</td>
+                                                <td>When authorization token is missing or invalid</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1502</td>
+                                                <td>Exceed Capacity</td>
+                                                <td>When TPS limit is exceeded.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1503</td>
+                                                <td>Sender Not Allowed</td>
+                                                <td>When Masking is not configured in the source address of that account</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1504</td>
+                                                <td>Invalid Parameter</td>
+                                                <td>When the API parameters are invalid in the request.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1505</td>
+                                                <td>Missing Parameter</td>
+                                                <td>When any API parameters are missing in the request.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1506</td>
+                                                <td>Insufficient Balance</td>
+                                                <td>When there is no balance</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1508</td>
+                                                <td>API Auth Fail</td>
+                                                <td>API Credentials are wrong.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1509</td>
+                                                <td>New API Not Allowed</td>
+                                                <td>When the user is not eligible for using new AdaReach API</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1510</td>
+                                                <td>New API Other Error</td>
+                                                <td>All the other types of error fall under this</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1511</td>
+                                                <td>Duplicate MID</td>
+                                                <td>When MID for New AdaReach API is same within the MID Expiry Time</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1512</td>
+                                                <td>System Error (remote node down)</td>
+                                                <td>When System is down.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1513</td>
+                                                <td>Wrong Content Type</td>
+                                                <td>When for Unicode messages, user is using regular message code (content type 1)</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1514</td>
+                                                <td>MSISDN Limit Exceeded</td>
+                                                <td>When for bulk SMS, max number of MSISDNs is exceeded (400 MSISDNs)</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1201</td>
+                                                <td>Data API Not Allowed</td>
+                                                <td>When data API is not enabled</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1202</td>
+                                                <td>Receiver Number Not Valid</td>
+                                                <td>When receiver number is not ROBI/Airtel (MNP included)</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1203</td>
+                                                <td>Provision Pack Not Allowed</td>
+                                                <td>When provision pack is not configured under this account</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1204</td>
+                                                <td>Provision Pack Invalid</td>
+                                                <td>When provision pack is invalid</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1001</td>
+                                                <td>International Not Allowed</td>
+                                                <td>When international SMS is not allowed in user properties.</td>
+                                              </tr>
+                                              <tr>
+                                                <td>1002</td>
+                                                <td>SMS Other Error</td>
+                                                <td>SMSC submit error (Applicable for SMS DLR check API)</td>
+                                              </tr>
                                         </tbody>
                                     </table>
                                 </div>
