@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from datetime import datetime, timedelta
 from django.db.models import Count, Sum
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -88,6 +89,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@login_required
 def admin_view(request):
     if request.method == 'POST':
         form = CoinHistoryForm(request.POST)
@@ -144,6 +146,7 @@ def admin_view(request):
     return render(request, 'admin_view.html', {'form': form})
 
 
+@login_required
 def billing_view(request):
     user = request.user
     transactions = None
@@ -164,7 +167,10 @@ def billing_view(request):
     return render(request, 'billing.html', {'transactions': transactions, 'account': account, "user": user})
 
 
-class SendSMSView(View):
+class SendSMSView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+    
     def get(self, request):
         return render(request, 'send_sms.html')
 
@@ -269,6 +275,7 @@ class SendSMSView(View):
         return redirect('send_sms')
 
 # Show the reports
+@login_required
 def report_view(request):
     reports = ReportDetails.objects.all()
 
@@ -303,6 +310,7 @@ def report_view(request):
     })
 
 # Delete a report
+@login_required
 def delete_report(request):
     if request.method == 'POST':
         report_id = request.POST.get('report_id')
@@ -312,6 +320,7 @@ def delete_report(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 # Fetch the latest report details
+@login_required
 def fetch_latest_report(request):
     current_user = request.user
     if current_user.sender_id:
@@ -323,9 +332,6 @@ def fetch_latest_report(request):
         report_id = request.POST.get('report_id')
         message_id = request.POST.get('message_id')
         receiver = request.POST.get('receiver')
-        print(message_id)
-        print(report_id)
-        print(receiver)
 
         # API call to fetch the latest details
         url = f"https://api.mobireach.com.bd/sms/status?sender=adaXXX&messageId={message_id}&receiver={receiver}"
