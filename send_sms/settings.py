@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-srd69ic3otxx&k2%2xg@pjnpwwv+k^ccj25r0fkmcw9*ap2-a@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     'www.sms.wtsdealnow.com',
@@ -158,38 +158,32 @@ if not os.path.exists(LOGS_DIR):
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
         'file': {
-            'level': 'INFO',  # You can change this to DEBUG if needed
+            'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOGS_DIR, 'app.logs'),
-            'formatter': 'verbose',
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+        '404_file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/404.log'),
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',  # Change to 'DEBUG' for more detailed logging
+            'handlers': ['file'],
+            'level': 'INFO',
             'propagate': True,
         },
-        'sms_app_logger': {  # Custom logger for your sms_app
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
+        'django.request': {
+            'handlers': ['file', '404_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.security.DisallowedHost': {
+            'handlers': ['file'],
+            'level': 'ERROR',
             'propagate': False,
         },
     },

@@ -1,12 +1,14 @@
 from django.apps import AppConfig
-import threading
-from sms_app.scheduler import start_scheduler
+import os
+from .utils import logger
 
-class SmsAppConfig(AppConfig):
+class SmsappConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'sms_app'
 
     def ready(self):
-        if not hasattr(threading.current_thread(), '_scheduler_started'):
-            threading.current_thread()._scheduler_started = True
-            start_scheduler()
+        if os.environ.get('DJANGO_SETTINGS_MODULE') == 'sms_app.settings':
+            try:
+                logger.info("Scheduler initialized in ready method.")
+            except Exception as e:
+                logger.error(f"Error while starting the scheduler: {str(e)}")

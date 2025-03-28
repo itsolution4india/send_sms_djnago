@@ -18,12 +18,14 @@ from datetime import datetime, timedelta
 from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
+from .utils import logger
 
 def admin_check(user):
     return user.is_superuser
 
 def login_view(request):
     if request.user.is_authenticated:
+        logger.info(f"User logged in successfully {request.user}")
         return redirect('dashboard')
         
     if request.method == 'POST':
@@ -361,19 +363,7 @@ def fetch_latest_report(request):
         else:
             messages.error(request, "Failed to refresh report")
             return redirect('report_view')
-        
-# @login_required
-# def profile_view(request):
-#     user = request.user
-#     account = user.account_set.first()
-#     sender_id = user.sender_id
-    
-#     context = {
-#         'user': user,
-#         'account': account,
-#         'sender_id': sender_id
-#     }
-#     return render(request, 'profile.html', context)
+
 
 @login_required
 def profile_view(request):
