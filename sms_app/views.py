@@ -575,13 +575,15 @@ def sms_api_report(request):
     total_error_codes = queryset.exclude(errorCode=0).count()
     
     # Calculate statistics
+    promotional_sms_count = queryset.filter(msg_type='P').aggregate(total_promotional_sms=Sum('user_msgCount'))['total_promotional_sms'] or 0
+    transactional_sms_count = queryset.filter(msg_type='T').aggregate(total_transactional_sms=Sum('user_msgCount'))['total_transactional_sms'] or 0
     stats = {
         'campaign_name': 'API V2 Service',
         'status': 'Running',
         'total_error_code': total_error_codes,
         'sms_count': queryset.aggregate(total_sms=Sum('user_msgCount'))['total_sms'] or 0,
-        'promotional_sms': queryset.filter(msg_type='P').count(),
-        'transactional_sms': queryset.filter(msg_type='T').count(),
+        'promotional_sms': promotional_sms_count,
+        'transactional_sms': transactional_sms_count,
         'reach': queryset.aggregate(total_reach=Sum('user_msgCount'))['total_reach'] or 0,
         'total_amount': queryset.aggregate(total_amount=Sum('user_msgCount'))['total_amount'] or 0,
     }
