@@ -283,7 +283,7 @@ class SendSMSView(LoginRequiredMixin, View):
 # Show the reports
 @login_required
 def report_view(request):
-    reports = ReportDetails.objects.all()
+    reports = ReportDetails.objects.filter(user=request.user)
 
     # Date filtering
     start_date = request.GET.get('start_date')
