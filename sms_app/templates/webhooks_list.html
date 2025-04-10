@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Webhooks</h1>
+        <h4>Webhooks</h4>
         <a href="{% url 'webhook_create' %}" class="btn btn-primary">Add New Webhook</a>
     </div>
     
@@ -38,11 +38,11 @@
                         <td>
                             <div class="input-group">
                                 <input type="password" id="secret-{{ webhook.id }}" class="form-control" value="{{ webhook.secret }}" readonly>
-                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="secret-{{ webhook.id }}">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-outline-secondary toggle-password m-0 p-1" type="button" data-target="secret-{{ webhook.id }}">
+                                    <i class="material-symbols-rounded opacity-50">visibility</i>
                                 </button>
                                 <button class="btn btn-outline-secondary copy-text" type="button" data-target="secret-{{ webhook.id }}">
-                                    <i class="bi bi-clipboard"></i>
+                                    <i class="material-symbols-rounded opacity-50">content_copy</i>
                                 </button>
                             </div>
                         </td>

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import SenderID, CustomUser, Account, CoinHistory, CampaignDetails, ReportDetails
-from .models import ApiCredentials, SendSmsApiResponse
+from .models import ApiCredentials, SendSmsApiResponse, Webhook, MessageStatus
 
 class SenderIDAdmin(admin.ModelAdmin):
     list_display = ('username', 'sender_id', 'created_at')
@@ -36,3 +36,5 @@ admin.site.register(CampaignDetails)
 admin.site.register(ReportDetails)
 admin.site.register(SendSmsApiResponse)
 admin.site.register(ApiCredentials)
+admin.site.register(Webhook)
+admin.site.register(MessageStatus)
