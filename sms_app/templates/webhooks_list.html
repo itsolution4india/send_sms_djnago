@@ -103,10 +103,10 @@
             const target = document.getElementById(this.dataset.target);
             if (target.type === 'password') {
                 target.type = 'text';
-                this.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                this.innerHTML = '<i class="material-symbols-rounded opacity-50">visibility</i>';
             } else {
                 target.type = 'password';
-                this.innerHTML = '<i class="bi bi-eye"></i>';
+                this.innerHTML = '<i class="material-symbols-rounded opacity-50">visibility_off</i>';
             }
         });
     });
@@ -121,7 +121,7 @@
             target.type = 'password';
             
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="bi bi-check"></i>';
+            this.innerHTML = '<i class="material-symbols-rounded opacity-50">check</i>';
             setTimeout(() => {
                 this.innerHTML = originalText;
             }, 1500);
