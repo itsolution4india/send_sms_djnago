@@ -4,9 +4,11 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse
-from .forms import CoinHistoryForm
+from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook
+from .forms import CoinHistoryForm, WebhookForm
 import csv
+import secrets
+from django.views.decorators.http import require_http_methods
 from django.views import View
 from django.core.paginator import Paginator
 import requests
@@ -609,3 +611,59 @@ def sms_api_report(request):
     }
     
     return render(request, 'sms_api_report.html', context)
+
+@login_required
+def webhook_list(request):
+    """Display all webhooks for the current user"""
+    webhooks = Webhook.objects.filter(user=request.user, is_active=True)
+    return render(request, 'webhooks_list.html', {'webhooks': webhooks})
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def webhook_create(request):
+    """Create a new webhook"""
+    if request.method == "POST":
+        form = WebhookForm(request.POST)
+        if form.is_valid():
+            webhook = form.save(commit=False)
+            webhook.user = request.user
+            webhook.secret = secrets.token_hex(16)
+            webhook.save()
+            
+            messages.success(request, "Webhook created successfully")
+            return redirect('webhook_list')
+    else:
+        form = WebhookForm()
+    
+    return render(request, 'webhooks_create.html', {'form': form})
+
+@login_required
+@require_http_methods(["POST"])
+def webhook_delete(request, webhook_id):
+    """Delete (deactivate) a webhook"""
+    try:
+        webhook = Webhook.objects.get(id=webhook_id, user=request.user)
+        webhook.is_active = False
+        webhook.save()
+        messages.success(request, "Webhook deleted successfully")
+    except Webhook.DoesNotExist:
+        messages.error(request, "Webhook not found")
+    
+    return redirect('webhook_list')
+
+@login_required
+@require_http_methods(["GET"])
+def webhook_test(request, webhook_id):
+    """Test a webhook by sending a test message"""
+    try:
+        webhook = Webhook.objects.get(id=webhook_id, user=request.user)
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Test notification sent"
+        })
+    except Webhook.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": "Webhook not found"
+        }, status=404)

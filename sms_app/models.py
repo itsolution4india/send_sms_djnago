@@ -126,3 +126,37 @@ class SendSmsApiResponse(models.Model):
     
     def __str__(self):
         return f"actual_messageId {self.actual_messageId} - user_messageId {self.user_messageId} - Status: {self.status}"
+    
+    
+class Webhook(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='webhooks')
+    url = models.URLField()
+    secret = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Webhook {self.id} for {self.user}"
+
+
+class MessageStatus(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('DELIVERED', 'Delivered'),
+        ('FAILED', 'Failed'),
+    ]
+
+    user_message_id = models.CharField(max_length=255, db_index=True)
+    actual_message_id = models.CharField(max_length=255, db_index=True)
+    receiver = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    last_checked_at = models.DateTimeField(auto_now=True)
+    next_check_at = models.DateTimeField()
+    check_attempts = models.IntegerField(default=0)
+    webhook_sent = models.BooleanField(default=False)
+    webhook_sent_at = models.DateTimeField(null=True, blank=True)
+    webhook_attempts = models.IntegerField(default=0)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"MessageStatus {self.user_message_id} ({self.status})"

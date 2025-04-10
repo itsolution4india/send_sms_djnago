@@ -1,0 +1,159 @@
+<!-- templates/webhooks/list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Webhooks</h1>
+        <a href="{% url 'webhook_create' %}" class="btn btn-primary">Add New Webhook</a>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if webhooks %}
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Secret</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for webhook in webhooks %}
+                    <tr>
+                        <td>{{ webhook.url }}</td>
+                        <td>
+                            <div class="input-group">
+                                <input type="password" id="secret-{{ webhook.id }}" class="form-control" value="{{ webhook.secret }}" readonly>
+                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="secret-{{ webhook.id }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary copy-text" type="button" data-target="secret-{{ webhook.id }}">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>{{ webhook.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info test-webhook" data-webhook-id="{{ webhook.id }}">Test</button>
+                            <form method="post" action="{% url 'webhook_delete' webhook.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this webhook?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>How to Use Webhooks</h5>
+            </div>
+            <div class="card-body">
+                <p>Your webhook will receive POST requests with the following JSON payload:</p>
+                <pre><code>{
+  "messageId": "your-message-id",
+  "actualMessageId": "provider-message-id",
+  "receiver": "88018XXXXXX",
+  "status": "SUCCESS",
+  "statusDescription": "Successfully transmitted",
+  "timestamp": "2025-04-10T14:30:00Z",
+  "msgCost": "0.01390",
+  "contentType": 1,
+  "msgCount": 1
+}</code></pre>
+                <p>We'll include the following headers with each request:</p>
+                <ul>
+                    <li><code>Content-Type: application/json</code></li>
+                    <li><code>X-Signature: [HMAC SHA-256 signature]</code></li>
+                    <li><code>X-Webhook-Id: [Your webhook ID]</code></li>
+                </ul>
+                <p>To verify the request came from us, compute the HMAC SHA-256 signature using your webhook secret and the raw JSON payload.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>You don't have any webhooks set up yet. Add one to receive real-time delivery status updates.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.getElementById(this.dataset.target);
+            if (target.type === 'password') {
+                target.type = 'text';
+                this.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            } else {
+                target.type = 'password';
+                this.innerHTML = '<i class="bi bi-eye"></i>';
+            }
+        });
+    });
+    
+    // Copy to clipboard
+    document.querySelectorAll('.copy-text').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.getElementById(this.dataset.target);
+            target.type = 'text';
+            target.select();
+            document.execCommand('copy');
+            target.type = 'password';
+            
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-check"></i>';
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 1500);
+        });
+    });
+    
+    // Test webhook
+    document.querySelectorAll('.test-webhook').forEach(button => {
+        button.addEventListener('click', function() {
+            const webhookId = this.dataset.webhookId;
+            const originalText = this.innerHTML;
+            this.innerHTML = 'Sending...';
+            this.disabled = true;
+            
+            fetch(`/webhooks/${webhookId}/test/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Test notification sent successfully!');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error sending test notification');
+                    console.error(error);
+                })
+                .finally(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                });
+        });
+    });
+</script>
+{% endblock %}
