@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook
+from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook, ApiCredentials
 from .forms import CoinHistoryForm, WebhookForm
 import csv
 import secrets
@@ -667,3 +667,125 @@ def webhook_test(request, webhook_id):
             "success": False,
             "message": "Webhook not found"
         }, status=404)
+        
+        
+@login_required
+def generate_api_token(request):
+    """View to generate or display API tokens"""
+    api_credential = ApiCredentials.objects.filter(user=request.user).first()
+    
+    # Calculate token expiry
+    token_expiry = None
+    if api_credential and api_credential.token_updated_date:
+        token_expiry = api_credential.token_updated_date + timedelta(hours=1)
+        remaining_time = token_expiry - timezone.now()
+        if remaining_time.total_seconds() > 0:
+            # Format as minutes:seconds
+            minutes, seconds = divmod(int(remaining_time.total_seconds()), 60)
+            token_expiry_str = f"{minutes}m {seconds}s"
+        else:
+            token_expiry_str = "Expired"
+    else:
+        token_expiry_str = None
+    
+    context = {
+        'api_credential': api_credential,
+        'token_expiry': token_expiry_str
+    }
+    
+    return render(request, 'api_token.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def refresh_api_token(request):
+    """View to generate or refresh API token"""
+    try:
+        # Get existing API credential or create a new one
+        api_credential = ApiCredentials.objects.filter(user=request.user).first()
+        
+        if api_credential and api_credential.refresh_token:
+            # Try to refresh using the refresh token
+            refresh_headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_credential.refresh_token}"
+            }
+            
+            refresh_response = requests.post(
+                "https://api.wtsdealnow.com/auth/token/refresh",
+                headers=refresh_headers
+            )
+            
+            if refresh_response.status_code == 200:
+                # Update with new tokens
+                refresh_data = refresh_response.json()
+                api_credential.token = refresh_data.get("token")
+                api_credential.refresh_token = refresh_data.get("refresh_token")
+                api_credential.token_updated_date = timezone.now()
+                api_credential.save()
+                messages.success(request, "API token refreshed successfully")
+            else:
+                # If refresh fails, try generating new token
+                generate_new_token(request, api_credential)
+        else:
+            # If no credentials exist, generate new token
+            generate_new_token(request)
+            
+    except Exception as e:
+        messages.error(request, f"Error refreshing token: {str(e)}")
+    
+    return redirect('generate_api_token')
+
+def generate_new_token(request, api_credential=None):
+    """Helper function to generate a new token"""
+    # Get username and password from form or user settings
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    
+    if not username or not password:
+        messages.error(request, "Username and password are required")
+        return
+    
+    # Request new token
+    payload = {
+        "username": username,
+        "password": password
+    }
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(
+            "https://api.wtsdealnow.com/auth/token",
+            json=payload,
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            token_data = response.json()
+            
+            if api_credential:
+                # Update existing credential
+                api_credential.username = username
+                api_credential.password = password  # Consider encrypting this
+                api_credential.token = token_data.get("token")
+                api_credential.refresh_token = token_data.get("refresh_token")
+                api_credential.token_updated_date = timezone.now()
+                api_credential.save()
+            else:
+                # Create new credential
+                ApiCredentials.objects.create(
+                    user=request.user,
+                    username=username,
+                    password=password,  # Consider encrypting this
+                    token=token_data.get("token"),
+                    refresh_token=token_data.get("refresh_token"),
+                    token_updated_date=timezone.now()
+                )
+            
+            messages.success(request, "New API token generated successfully")
+        else:
+            messages.error(request, f"Failed to generate token: {response.text}")
+    except Exception as e:
+        messages.error(request, f"Error generating token: {str(e)}")

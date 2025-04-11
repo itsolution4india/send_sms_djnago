@@ -69,15 +69,13 @@
             <div class="card-body">
                 <p>Your webhook will receive POST requests with the following JSON payload:</p>
                 <pre><code>{
-  "messageId": "your-message-id",
-  "actualMessageId": "provider-message-id",
-  "receiver": "88018XXXXXX",
+  "timestamp": "2025-04-10T14:30:00Z",
   "status": "SUCCESS",
   "statusDescription": "Successfully transmitted",
-  "timestamp": "2025-04-10T14:30:00Z",
-  "msgCost": "0.01390",
-  "contentType": 1,
   "msgCount": 1
+  "contentType": 1,
+  "receiver": "88018XXXXXX",
+  "messageId": "your-message-id",
 }</code></pre>
                 <p>We'll include the following headers with each request:</p>
                 <ul>
@@ -156,4 +154,13 @@
         });
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var dashboardLink = document.getElementById('Webhook');
+      if (dashboardLink) {
+        dashboardLink.classList.add('active');
+      }
+    });
+  </script>
 {% endblock %}
