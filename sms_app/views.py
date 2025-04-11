@@ -703,6 +703,7 @@ def refresh_api_token(request):
         # Get existing API credential or create a new one
         api_credential = ApiCredentials.objects.filter(user=request.user).first()
         
+        # If we have an existing credential with a refresh token, try to refresh it
         if api_credential and api_credential.refresh_token:
             # Try to refresh using the refresh token
             refresh_headers = {
@@ -710,25 +711,36 @@ def refresh_api_token(request):
                 "Authorization": f"Bearer {api_credential.refresh_token}"
             }
             
-            refresh_response = requests.post(
-                "https://api.wtsdealnow.com/auth/token/refresh",
-                headers=refresh_headers
-            )
-            
-            if refresh_response.status_code == 200:
-                # Update with new tokens
-                refresh_data = refresh_response.json()
-                api_credential.token = refresh_data.get("token")
-                api_credential.refresh_token = refresh_data.get("refresh_token")
-                api_credential.token_updated_date = timezone.now()
-                api_credential.save()
-                messages.success(request, "API token refreshed successfully")
-            else:
-                # If refresh fails, try generating new token
-                generate_new_token(request, api_credential)
-        else:
-            # If no credentials exist, generate new token
-            generate_new_token(request)
+            try:
+                refresh_response = requests.post(
+                    "https://api.wtsdealnow.com/auth/token/refresh",
+                    headers=refresh_headers,
+                    timeout=10  # Add timeout
+                )
+                
+                if refresh_response.status_code == 200:
+                    # Update with new tokens
+                    refresh_data = refresh_response.json()
+                    token = refresh_data.get("token")
+                    refresh_token = refresh_data.get("refresh_token")
+                    
+                    if token and refresh_token:
+                        api_credential.token = token
+                        api_credential.refresh_token = refresh_token
+                        api_credential.token_updated_date = timezone.now()
+                        api_credential.save()
+                        messages.success(request, "API token refreshed successfully")
+                        return redirect('generate_api_token')
+                    else:
+                        # If the response is missing tokens, fall back to generating a new token
+                        messages.warning(request, "Refresh token response was incomplete, generating new token")
+                else:
+                    messages.warning(request, f"Failed to refresh token (HTTP {refresh_response.status_code}), trying to generate new token")
+            except Exception as e:
+                messages.warning(request, f"Error during token refresh: {str(e)}, trying to generate new token")
+        
+        # If we reach here, we need to generate a new token
+        generate_new_token(request, api_credential)
             
     except Exception as e:
         messages.error(request, f"Error refreshing token: {str(e)}")
@@ -765,12 +777,20 @@ def generate_new_token(request, api_credential=None):
         if response.status_code == 200:
             token_data = response.json()
             
+            # Validate that token and refresh_token exist in the response
+            token = token_data.get("token")
+            refresh_token = token_data.get("refresh_token")
+            
+            if not token or not refresh_token:
+                messages.error(request, "API returned incomplete token data")
+                return
+                
             if api_credential:
                 # Update existing credential
                 api_credential.username = username
-                api_credential.password = password  # Consider encrypting this
-                api_credential.token = token_data.get("token")
-                api_credential.refresh_token = token_data.get("refresh_token")
+                api_credential.password = password
+                api_credential.token = token
+                api_credential.refresh_token = refresh_token
                 api_credential.token_updated_date = timezone.now()
                 api_credential.save()
             else:
@@ -778,14 +798,21 @@ def generate_new_token(request, api_credential=None):
                 ApiCredentials.objects.create(
                     user=request.user,
                     username=username,
-                    password=password,  # Consider encrypting this
-                    token=token_data.get("token"),
-                    refresh_token=token_data.get("refresh_token"),
+                    password=password,
+                    token=token,
+                    refresh_token=refresh_token,
                     token_updated_date=timezone.now()
                 )
             
             messages.success(request, "New API token generated successfully")
         else:
-            messages.error(request, f"Failed to generate token: {response.text}")
+            error_msg = f"Failed to generate token: {response.status_code}"
+            try:
+                error_detail = response.json()
+                error_msg += f" - {error_detail}"
+            except:
+                error_msg += f" - {response.text}"
+            
+            messages.error(request, error_msg)
     except Exception as e:
         messages.error(request, f"Error generating token: {str(e)}")
