@@ -106,19 +106,16 @@
       <tr>
         <th>Parameter Name</th>
         <th>Description</th>
-        <th>Validity</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>token</td>
         <td>Generated token to use as authorization value on the send SMS and other related APIs.</td>
-        <td>1 hour</td>
       </tr>
       <tr>
         <td>refresh_token</td>
         <td>Generated refresh token to refresh the authorization value. A new token will be generated. It is advised to use refresh_token to generate a new token instead of making a new token generate request (It may result in request limitation error).</td>
-        <td>1 hour</td>
       </tr>
     </tbody>
   </table>
@@ -544,7 +541,7 @@
                                             <tr>
                                                 <td>401</td>
                                                 <td>Unauthorized</td>
-                                                <td>Invalid credentials, expired token, or missing authorization</td>
+                                                <td>Invalid credentials, or missing authorization</td>
                                             </tr>
                                             <tr>
                                                 <td>403</td>
