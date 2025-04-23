@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h5 class="mb-4">Details</h5>
+
+    <!-- Search and Filter Form -->
+    <div class="w-100">
+        <form method="POST" class="d-flex flex-wrap gap-2 align-items-end bg-gradient-dark shadow-dark border-radius-lg p-3 text-white w-100">
+            {% csrf_token %}
+
+            <div style="min-width: 180px;">
+                <label for="start_date" class="form-label text-white mb-1">Start Date</label>
+                <input type="date" class="form-control form-control-sm text-white" id="start_date" name="start_date" value="{{ start_date }}" style="background-color: transparent; border-radius: 8px;">
+            </div>
+
+            <div style="min-width: 180px;">
+                <label for="end_date" class="form-label text-white mb-1">End Date</label>
+                <input type="date" class="form-control form-control-sm text-white" id="end_date" name="end_date" value="{{ end_date }}" style="background-color: transparent; border-radius: 8px;">
+            </div>
+
+            <div style="min-width: 180px;">
+                <label class="form-label text-white mb-1">Phone Number</label>
+                <input type="text" class="form-control form-control-sm text-white" name="phone" placeholder="Phone Number" style="background-color: transparent; border-radius: 8px;">
+            </div>
+
+            <div style="min-width: 180px;">
+                <label class="form-label text-white mb-1">Message ID</label>
+                <input type="text" class="form-control form-control-sm text-white" name="messageid" placeholder="Message ID" style="background-color: transparent; border-radius: 8px;">
+            </div>
+
+            <div style="min-width: 180px;">
+                <label class="form-label text-white mb-1">User</label>
+                <input type="text" class="form-control form-control-sm text-white" name="user" placeholder="User" style="background-color: transparent; border-radius: 8px;">
+            </div>
+
+            <div style="display:flex;align-items: center;">
+                <button type="submit" class="btn btn-info btn-sm ">Filter Data</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card-body px-0 pb-2 border">
+        <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Created At</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Content Type</th>
+                        <th>Error Code</th>
+                        <th>Actual msgCount</th>
+                        <th>Actual messageId</th>
+                        <th>Actual current balance</th>
+                        <th>User msgCount</th>
+                        <th>User messageId</th>
+                        <th>User current balance</th>
+                        <th>Receiver</th>
+                        <th>Content</th>
+                        <th>Msg type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in data %}
+                    <tr>
+                        <td><p class="text-sm font-weight-bold mb-0">{{ i.created_at }}</p></td>
+                        <td><p class="text-sm font-weight-bold mb-0">{{ i.user }}</p></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.status }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.description }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.content_type }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.errorCode }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.actual_msgCount }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.actual_messageId }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.actual_current_balance }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.user_msgCount }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.user_messageId }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.user_current_balance }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.receiver }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.content }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ i.msg_type }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+{% endblock %}
