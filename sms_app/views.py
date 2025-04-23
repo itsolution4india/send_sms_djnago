@@ -638,16 +638,20 @@ def support_sendsmsapi(request):
     phone = request.POST.get('phone')
     message_id = request.POST.get('messageid')
     username = request.POST.get('user')
+    
     print(start_date,end_date,phone,message_id,username)
 
     data = SendSmsApiResponse.objects.all()
+    filters_applied = False
 
     # Filter by date range (if provided)
     try:
         if start_date:
+            filters_applied = True
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
             data = data.filter(created_at__date__gte=start_date_obj)
         if end_date:
+            filters_applied = True
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
             data = data.filter(created_at__date__lte=end_date_obj)
     except ValueError:
@@ -655,10 +659,12 @@ def support_sendsmsapi(request):
 
     # Filter by phone
     if phone:
+         filters_applied = True
          data = data.filter(user__phone_number__icontains=phone)
 
     # Filter by message ID
     if message_id:
+        filters_applied = True
         data = data.filter(user_messageId__icontains=message_id)
         print(data)
 
@@ -668,8 +674,10 @@ def support_sendsmsapi(request):
             auth_user = CustomUser.objects.get(username__icontains=username)
             data = data.filter(user=auth_user)
         except CustomUser.DoesNotExist:
-            data = data.none()  # No user found — return empty queryset
-
+            data = data.none() 
+    
+    if not filters_applied:
+        data = data.order_by('created_at')[0:20]
     context = {
         'data': data,
         'start_date': start_date,
