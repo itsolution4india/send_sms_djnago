@@ -182,7 +182,8 @@
                                 </div>
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
-                                    <code>POST /sms/send</code>
+                                    <code>POST /sms/send-transactional</code><br>
+                                    <code>POST /sms/send-promotional</code>
 
                                     <h6 class="mt-3">Request Headers</h6>
                                     <table class="table-bordered">
@@ -245,9 +246,9 @@
                                             </tbody>
                                           </table>                                          
 
-                                    <h6>Sample cURL Request</h6>
+                                    <h6>Sample Promotional cURL Request</h6>
                                     <div class="curl-code position-relative">
-                                        <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send \
+                                        <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send-promotional \
 -H "Authorization: Bearer your_refresh_token" \
 -H "Content-Type: application/json" \
 -d '{
@@ -255,11 +256,26 @@
     "receiver": ["8801234567890"],
     "contentType": 1/2,
     "content": "Hello World!",
-    "msgType": "T/P",
+    "msgType": "P",
     "requestType": "S/B"
 }'</code></pre>
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
                                     </div>
+                                    <h6>Sample Transactional cURL Request</h6>
+                                    <div class="curl-code position-relative">
+                                      <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send-transactional \
+-H "Authorization: Bearer your_refresh_token" \
+-H "Content-Type: application/json" \
+-d '{
+  "sender": "SENDER_ID",
+  "receiver": ["8801234567890"],
+  "contentType": 1/2,
+  "content": "Hello World!",
+  "msgType": "T",
+  "requestType": "S/B"
+}'</code></pre>
+                                      <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
+                                  </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
                                     <pre><code>{
