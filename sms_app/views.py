@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models.functions import TruncDate
 from .utils import logger
 
 def admin_check(user):
@@ -603,14 +604,90 @@ def sms_api_report(request):
         ]
     }
     
+    date_wise_sms = (
+        queryset.annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(sms_count=Sum('user_msgCount'))
+        .order_by('date')
+    )
+    if start_date and end_date:
+         filtered_sms = [entry for entry in date_wise_sms if start_date <= entry['date'] <= end_date]
+    else:
+        filtered_sms = date_wise_sms
+
+# Prepare chart data
+    date_labels = [entry['date'].strftime('%Y-%m-%d') for entry in filtered_sms]
+    sms_counts = [entry['sms_count'] for entry in filtered_sms]
+        
     context = {
         'stats': stats,
         'sms_type_data': sms_type_data,
         'start_date': start_date,
         'end_date': end_date,
+        'date_labels': date_labels,
+        'sms_counts': sms_counts,
     }
     
     return render(request, 'sms_api_report.html', context)
+
+@user_passes_test(admin_check, login_url='/login/')
+def support_sendsmsapi(request):
+    # Get filter inputs from the form
+    start_date = request.POST.get('start_date')
+    end_date = request.POST.get('end_date')
+    phone = request.POST.get('phone')
+    message_id = request.POST.get('messageid')
+    username = request.POST.get('user')
+    
+    print(start_date,end_date,phone,message_id,username)
+
+    data = SendSmsApiResponse.objects.all()
+    filters_applied = False
+
+    # Filter by date range (if provided)
+    try:
+        if start_date:
+            filters_applied = True
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            data = data.filter(created_at__date__gte=start_date_obj)
+        if end_date:
+            filters_applied = True
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            data = data.filter(created_at__date__lte=end_date_obj)
+    except ValueError:
+        pass  # Ignore invalid dates silently
+
+    # Filter by phone
+    if phone:
+         filters_applied = True
+         data = data.filter(user__phone_number__icontains=phone)
+
+    # Filter by message ID
+    if message_id:
+        filters_applied = True
+        data = data.filter(user_messageId__icontains=message_id)
+        print(data)
+
+    # Filter by user (username string)
+    if username:
+        try:
+            auth_user = CustomUser.objects.get(username__icontains=username)
+            data = data.filter(user=auth_user)
+        except CustomUser.DoesNotExist:
+            data = data.none() 
+    
+    if not filters_applied:
+        data = data.order_by('created_at')[0:20]
+    context = {
+        'data': data,
+        'start_date': start_date,
+        'end_date': end_date,
+        'phone': phone,
+        'message_id': message_id,
+        'user': username,
+    }
+
+    return render(request, "support_sendsmsapi.html", context)
 
 @login_required
 def webhook_list(request):

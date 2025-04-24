@@ -23,5 +23,6 @@ urlpatterns = [
     path('webhooks/<int:webhook_id>/test/', views.webhook_test, name='webhook_test'),
     
     path('api/token/', views.generate_api_token, name='generate_api_token'),
+    path('support/', views.support_sendsmsapi, name='support_sendsmsapi'),
     path('api/token/refresh/', views.refresh_api_token, name='refresh_api_token'),
 ]

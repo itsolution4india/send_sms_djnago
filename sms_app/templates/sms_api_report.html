@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
     <h4>SMS API Report</h4>
     
     <!-- Date Range Filter Form -->
@@ -25,7 +25,12 @@
             </div>
         </div>
     </form>
-    
+
+    <div class="card p-3 mb-3" style="width: 100%;height:400px;">
+        <canvas id="smsDateLineChart" style="width: 100%; height: 100%;"></canvas>
+      </div>
+
+ 
     <!-- Statistics Table -->
     <div class="row">
         <div class="col-md-6 card p-2">
@@ -126,6 +131,55 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ date_labels|json_script:"date-labels" }}
+{{ sms_counts|json_script:"sms-counts" }}
+<script>
+    const labels = {{ date_labels|safe }};
+    const data = {{ sms_counts|safe }};
+
+    const ctx = document.getElementById('smsDateLineChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'SMS Sent Per Day',
+                data: data,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.3,
+                fill: false,
+                pointRadius: 5,
+                pointBackgroundColor: 'rgb(75, 192, 192)',
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'SMS Count'
+                    }
+                }
+            }
+        }
+    });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // SMS Type Pie Chart
