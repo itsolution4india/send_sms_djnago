@@ -1,22 +1,309 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Manage Coin Transactions</h2>
-    <form method="post" novalidate>
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+{% load widget_tweaks %}
 
-    {% if messages %}
-        <div class="mt-4">
-            {% for message in messages %}
-                <div class="alert alert-success">
-                    {{ message }}
-                </div>
-            {% endfor %}
+<style>
+    body {
+        background-color: #f5f6f8;
+        padding: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    input.form-control,
+    select.form-control,
+    textarea.form-control {
+        height: 48px !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        font-size: 1rem !important;
+        background-color: #f9f9f9 !important;
+        border: 1px solid #ccc !important;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        box-sizing: border-box;
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    textarea.form-control {
+        height: auto !important;
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-control:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    }
+
+    .transaction-card {
+        background-color: #fff;
+        border-radius: 15px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+        margin-bottom: 24px;
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    .text-danger {
+        font-size: 0.85rem;
+        color: #e74a3b;
+        margin-top: 0.5rem;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 767px) {
+        .transaction-card {
+            padding: 16px;
+        }
+    }
+
+    .custom-form .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.25rem;
+    }
+
+    .custom-form .form-group label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .uniform-input {
+        height: 48px !important;
+        padding: 10px 14px !important;
+        border-radius: 10px !important;
+        background-color: #f9f9f9 !important;
+        border: 1px solid #ccc !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .uniform-input:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        outline: none;
+    }
+
+    textarea.uniform-input {
+        height: auto !important;
+        min-height: 100px;
+        resize: vertical;
+    }
+</style>
+
+<!-- Page layout -->
+<div class="container mt-4">
+    <h2 class="mb-4">💰 Manage Coin Transactions</h2>
+    <div class="row">
+        <!-- Left: Form -->
+        <div id="filterFormWrapper" class="col-md-6">
+            <div class="transaction-card">
+                <form method="post" novalidate class="custom-form">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field|add_class:"form-control uniform-input" }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
+                </form>
+                {% if messages %}
+                    <div class="mt-4">
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
+
+        <!-- Right: Transaction History with Filters -->
+        <div id="tableWrapper" class="col-md-6">
+            <div class="transaction-card">
+                <!-- Toggle Button -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Transaction History</h5>
+                    <button id="toggleFilterBtn" class="btn btn-sm btn-outline-primary">🡼 Full Screen</button>
+                </div>
+
+                <form method="get" class="mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group mb-2">
+                                <label for="transaction_type">Type</label>
+                                <select name="transaction_type" class="form-control">
+                                    <option value="">All Types</option>
+                                    {% for key,val in types %}
+                                        <option value="{{ key }}">{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group mb-2">
+                                <label for="category">Category</label>
+                                <select name="category" class="form-control">
+                                    <option value="">All Categories</option>
+                                    {% for key, val in categories %}
+                                        <option value="{{ key }}">{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group mb-2">
+                                <label for="user">User</label>
+                                <select name="user" class="form-control">
+                                    <option value="">Select User</option>
+                                    {% for i in users %}
+                                        <option value="{{ i.username }}">{{ i.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="start_date">Start Date</label>
+                                <input type="date" name="start_date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="end_date">End Date</label>
+                                <input type="date" name="end_date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="trans_id">Transaction Id.</label>
+                                <input type="text" name="trans_id" class="form-control" placeholder="xxx xxx xxx xxx">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-secondary mt-3 w-100">Filter</button>
+                </form>
+
+                <!-- History Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm mt-2">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Coins</th>
+                                <th>Category</th>
+                                <th>Reason</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in coin_history %}
+                                <tr>
+                                    <td>{{ txn.transaction_id }}</td>
+                                    <td>{{ txn.user.username }}</td>
+                                    <td>{{ txn.get_transaction_type_display }}</td>
+                                    <td>{{ txn.coins }}</td>
+                                    <td>{{ txn.get_category_display }}</td>
+                                    <td>{{ txn.reason }}</td>
+                                    <td>{{ txn.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No transactions found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Toggle Script -->
+<script>
+    const toggleBtn = document.getElementById("toggleFilterBtn");
+    const formCol = document.getElementById("filterFormWrapper");
+    const tableCol = document.getElementById("tableWrapper");
+
+    // Initialize state from localStorage
+    let formVisible = localStorage.getItem("formVisible") !== "false";  // Default: true
+
+    function updateLayout() {
+        if (formVisible) {
+            formCol.style.display = "block";
+            tableCol.classList.remove("col-md-12");
+            tableCol.classList.add("col-md-6");
+            toggleBtn.innerHTML = "🡼 Full Screen ";
+        } else {
+            formCol.style.display = "none";
+            tableCol.classList.remove("col-md-6");
+            tableCol.classList.add("col-md-12");
+            toggleBtn.innerHTML = "🡽 Small Screen";
+        }
+    }
+
+    // Apply on page load
+    updateLayout();
+
+    toggleBtn.addEventListener("click", () => {
+        formVisible = !formVisible;
+        localStorage.setItem("formVisible", formVisible);  // Save state
+        updateLayout();
+    });
+</script>
+
 {% endblock %}
