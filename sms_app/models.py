@@ -160,3 +160,18 @@ class MessageStatus(models.Model):
 
     def __str__(self):
         return f"MessageStatus {self.user_message_id} ({self.status})"
+    
+
+class UserAccess(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    can_start_campaign = models.BooleanField(default=False)
+    can_view_reports = models.BooleanField(default=False)
+    can_see_billing = models.BooleanField(default=False)
+    can_sms_api_reports = models.BooleanField(default=False)
+    can_api_manual = models.BooleanField(default=False)
+    can_webhooks_configuration = models.BooleanField(default=False)
+    can_create_api_token = models.BooleanField(default=False)
+
+
+    def __str__(self):
+        return f"{self.user.email} - Access Rights"

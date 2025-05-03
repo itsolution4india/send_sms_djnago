@@ -21,7 +21,7 @@ urlpatterns = [
     path('webhooks/create/', views.webhook_create, name='webhook_create'),
     path('webhooks/<int:webhook_id>/delete/', views.webhook_delete, name='webhook_delete'),
     path('webhooks/<int:webhook_id>/test/', views.webhook_test, name='webhook_test'),
-    
+    path('access_denide/', views.access_denide, name='access_denide'), 
     path('api/token/', views.generate_api_token, name='generate_api_token'),
     path('support/', views.support_sendsmsapi, name='support_sendsmsapi'),
     path('api/token/refresh/', views.refresh_api_token, name='refresh_api_token'),

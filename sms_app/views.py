@@ -23,7 +23,7 @@ from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models.functions import TruncDate
-from .utils import logger
+from .utils import logger,check_user_permission
 
 def admin_check(user):
     return user.is_superuser
@@ -210,6 +210,8 @@ def billing_view(request):
     user = request.user
     transactions = None
     account = None
+    if not check_user_permission(request.user, 'can_see_billing'):
+           return redirect("access_denide")
 
     try:
         account = Account.objects.get(user=user)
@@ -231,6 +233,8 @@ class SendSMSView(LoginRequiredMixin, View):
     redirect_field_name = 'redirect_to'
     
     def get(self, request):
+        if not check_user_permission(request.user, 'can_start_campaign'):
+           return redirect("access_denide")
         return render(request, 'send_sms.html')
 
     def post(self, request):
@@ -336,6 +340,8 @@ class SendSMSView(LoginRequiredMixin, View):
 # Show the reports
 @login_required
 def report_view(request):
+    if not check_user_permission(request.user, 'can_view_reports'):
+           return redirect("access_denide")
     reports = ReportDetails.objects.filter(user=request.user)
 
     # Date filtering
@@ -450,6 +456,8 @@ def profile_view(request):
     
 @login_required
 def api_documentation(request):
+    if not check_user_permission(request.user, 'can_sms_api_reports'):
+        return redirect("access_denide")
     return render(request, 'api_documentation.html')
 
 @login_required   
@@ -610,6 +618,8 @@ def download_all_reports_csv(request):
 @login_required
 def sms_api_report(request):
     # Default to last 30 days if no date range specified
+    if not check_user_permission(request.user, 'can_sms_api_reports'):
+           return redirect("access_denide")
     end_date = request.GET.get('end_date')
     start_date = request.GET.get('start_date')
     
@@ -742,6 +752,8 @@ def support_sendsmsapi(request):
 @login_required
 def webhook_list(request):
     """Display all webhooks for the current user"""
+    if not check_user_permission(request.user, 'can_webhooks_configuration'):
+           return redirect("access_denide")
     webhooks = Webhook.objects.filter(user=request.user, is_active=True)
     return render(request, 'webhooks_list.html', {'webhooks': webhooks})
 
@@ -799,6 +811,8 @@ def webhook_test(request, webhook_id):
 @login_required
 def generate_api_token(request):
     """View to generate or display API tokens"""
+    if not check_user_permission(request.user, 'can_create_api_token'):
+           return redirect("access_denide")
     api_credential = ApiCredentials.objects.filter(user=request.user).first()
     
     # Calculate token expiry
@@ -943,3 +957,8 @@ def generate_new_token(request, api_credential=None):
             messages.error(request, error_msg)
     except Exception as e:
         messages.error(request, f"Error generating token: {str(e)}")
+
+
+@login_required
+def access_denide(request):
+    return render(request, "access_denide.html") 
