@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import SenderID, CustomUser, Account, CoinHistory, CampaignDetails, ReportDetails
-from .models import ApiCredentials, SendSmsApiResponse, Webhook, MessageStatus
+from .models import ApiCredentials, SendSmsApiResponse, Webhook, MessageStatus,UserAccess
 
 class SenderIDAdmin(admin.ModelAdmin):
     list_display = ('username', 'sender_id', 'created_at')
@@ -27,7 +27,10 @@ class CoinHistoryAdmin(admin.ModelAdmin):
     search_fields = ('transaction_id', 'user__username', 'reason')
     readonly_fields = ('transaction_id', 'created_at')
     date_hierarchy = 'created_at'
+class UserAcessAdmin(admin.ModelAdmin):
+    list_display=('user','can_start_campaign','can_view_reports','can_see_billing','can_sms_api_reports','can_api_manual','can_webhooks_configuration','can_create_api_token')
 
+admin.site.register(UserAccess,UserAcessAdmin)
 admin.site.register(SenderID, SenderIDAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Account, AccountAdmin)

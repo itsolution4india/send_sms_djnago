@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook, ApiCredentials
 from .forms import CoinHistoryForm, WebhookForm
 import csv
+from django.utils.dateparse import parse_date
+from django.db import IntegrityError
 import secrets
 from django.views.decorators.http import require_http_methods
 from django.views import View
@@ -21,7 +23,7 @@ from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models.functions import TruncDate
-from .utils import logger
+from .utils import logger,check_user_permission
 
 def admin_check(user):
     return user.is_superuser
@@ -100,59 +102,107 @@ def logout_view(request):
 
 @user_passes_test(admin_check, login_url='/login/')
 def admin_view(request):
+    coin_history = None
+    form = CoinHistoryForm()
+
+    # Handle POST (new transaction)
     if request.method == 'POST':
         form = CoinHistoryForm(request.POST)
         if form.is_valid():
             coin_history = form.save(commit=False)
+            selected_user = coin_history.user
 
-            # Assign the user field here, assuming request.user is the user making the transaction
-            coin_history.user = request.user
+            # Ensure account exists
+            try:
+                # Ensure account exists (with 'get_or_create' to avoid duplicates)
+                # Adding account_id default as 0 for creating the account if it's missing
+                account, created = Account.objects.get_or_create(
+                    user=selected_user,
+                    defaults={'gui_balance': 0, 'api_balance': 0, 'account_id': 0}  # Ensuring account_id is set
+                )
 
-            account = Account.objects.filter(user=coin_history.user).first()
+                if created:
+              
+                    if not account.account_id:
+                        raise IntegrityError("Account ID is required in the backend.")
 
-            if not account:
-                messages.error(request, f"No account found for user {coin_history.user.username}.")
+            except IntegrityError as e:
+             
+                if 'account_id' in str(e):
+                    messages.error(request, "Account ID is missing. Please make sure it's added in the backend.")
+                else:
+                    messages.error(request, "An account already exists for this user.")
                 return redirect('admin_view')
 
-            if coin_history.category == 'api_balance':
-                balance = account.api_balance
-            else:
-                balance = account.gui_balance
+            # Determine balance
+            balance = account.api_balance if coin_history.category == 'api_balance' else account.gui_balance
 
+            # Credit or debit logic
             if coin_history.transaction_type == 'credit':
-                # Credit coins to the account balance
                 new_balance = balance + coin_history.coins
-                reason = f"{coin_history.coins} coins have been credited to your account for {dict(CoinHistory.CATEGORY_CHOICES)[coin_history.category]}"
+                reason = f"{coin_history.coins} coins have been credited to your account for {dict(CoinHistory.CATEGORY_CHOICES).get(coin_history.category)}"
             else:
-                # Debit coins from the account balance
                 if balance >= coin_history.coins:
                     new_balance = balance - coin_history.coins
-                    reason = f"{coin_history.coins} coins have been debited from your account for {dict(CoinHistory.CATEGORY_CHOICES)[coin_history.category]}"
+                    reason = f"{coin_history.coins} coins have been debited from your account for {dict(CoinHistory.CATEGORY_CHOICES).get(coin_history.category)}"
                 else:
                     messages.error(request, f"Insufficient balance to debit {coin_history.coins} coins.")
                     return redirect('admin_view')
 
-            # Update the account balance
+            # Update balance
             if coin_history.category == 'api_balance':
                 account.api_balance = new_balance
             else:
                 account.gui_balance = new_balance
-
             account.save()
 
-            # Generate the reason automatically
+            # Save transaction
             coin_history.reason = reason
-
-            # Save coin history
             coin_history.save()
 
             messages.success(request, f"Transaction {coin_history.transaction_id} successfully recorded!")
             return redirect('admin_view')
 
-    else:
-        form = CoinHistoryForm()
+    # Handle GET: Filtering
+    coin_history_qs = CoinHistory.objects.all().order_by('-created_at')
 
-    return render(request, 'admin_view.html', {'form': form})
+    txn_type = request.GET.get('transaction_type')
+    category_filter = request.GET.get('category')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    trans_id=request.GET.get('trans_id')
+    username=request.GET.get('user')
+
+    if txn_type:
+        coin_history_qs = coin_history_qs.filter(transaction_type=txn_type)
+
+    if category_filter:
+        coin_history_qs = coin_history_qs.filter(category=category_filter)
+
+    if start_date:
+        coin_history_qs = coin_history_qs.filter(created_at__date__gte=parse_date(start_date))
+
+    if end_date:
+        coin_history_qs = coin_history_qs.filter(created_at__date__lte=parse_date(end_date))
+    if trans_id:
+        coin_history_qs = coin_history_qs.filter(transaction_id__icontains=trans_id)
+
+    if username:
+        coin_history_qs=coin_history_qs.filter(user__username=username)
+    users = CustomUser.objects.all()
+
+    return render(request, 'admin_view.html', {
+        'form': form,
+        'coin_history': coin_history_qs,
+        'users': users,
+         'types': CoinHistory.TRANSACTION_TYPE_CHOICES,
+        'categories': CoinHistory.CATEGORY_CHOICES,
+        'txn_type': txn_type,
+        'category_filter': category_filter,
+        'start_date': start_date,
+        'end_date': end_date,
+    })
+
 
 
 @login_required
@@ -160,6 +210,8 @@ def billing_view(request):
     user = request.user
     transactions = None
     account = None
+    if not check_user_permission(request.user, 'can_see_billing'):
+           return redirect("access_denide")
 
     try:
         account = Account.objects.get(user=user)
@@ -181,6 +233,8 @@ class SendSMSView(LoginRequiredMixin, View):
     redirect_field_name = 'redirect_to'
     
     def get(self, request):
+        if not check_user_permission(request.user, 'can_start_campaign'):
+           return redirect("access_denide")
         return render(request, 'send_sms.html')
 
     def post(self, request):
@@ -286,6 +340,8 @@ class SendSMSView(LoginRequiredMixin, View):
 # Show the reports
 @login_required
 def report_view(request):
+    if not check_user_permission(request.user, 'can_view_reports'):
+           return redirect("access_denide")
     reports = ReportDetails.objects.filter(user=request.user)
 
     # Date filtering
@@ -400,6 +456,8 @@ def profile_view(request):
     
 @login_required
 def api_documentation(request):
+    if not check_user_permission(request.user, 'can_sms_api_reports'):
+        return redirect("access_denide")
     return render(request, 'api_documentation.html')
 
 @login_required   
@@ -560,6 +618,8 @@ def download_all_reports_csv(request):
 @login_required
 def sms_api_report(request):
     # Default to last 30 days if no date range specified
+    if not check_user_permission(request.user, 'can_sms_api_reports'):
+           return redirect("access_denide")
     end_date = request.GET.get('end_date')
     start_date = request.GET.get('start_date')
     
@@ -689,6 +749,8 @@ def support_sendsmsapi(request):
 @login_required
 def webhook_list(request):
     """Display all webhooks for the current user"""
+    if not check_user_permission(request.user, 'can_webhooks_configuration'):
+           return redirect("access_denide")
     webhooks = Webhook.objects.filter(user=request.user, is_active=True)
     return render(request, 'webhooks_list.html', {'webhooks': webhooks})
 
@@ -746,6 +808,8 @@ def webhook_test(request, webhook_id):
 @login_required
 def generate_api_token(request):
     """View to generate or display API tokens"""
+    if not check_user_permission(request.user, 'can_create_api_token'):
+           return redirect("access_denide")
     api_credential = ApiCredentials.objects.filter(user=request.user).first()
     
     # Calculate token expiry
@@ -890,3 +954,8 @@ def generate_new_token(request, api_credential=None):
             messages.error(request, error_msg)
     except Exception as e:
         messages.error(request, f"Error generating token: {str(e)}")
+
+
+@login_required
+def access_denide(request):
+    return render(request, "access_denide.html") 
