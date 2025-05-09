@@ -637,9 +637,7 @@ def support_sendsmsapi(request):
     end_date = request.POST.get('end_date')
     phone = request.POST.get('phone')
     message_id = request.POST.get('messageid')
-    username = request.POST.get('user')
-    
-    print(start_date,end_date,phone,message_id,username)
+    username = request.POST.get('user') 
 
     data = SendSmsApiResponse.objects.all()
     filters_applied = False
@@ -660,18 +658,17 @@ def support_sendsmsapi(request):
     # Filter by phone
     if phone:
          filters_applied = True
-         data = data.filter(user__phone_number__icontains=phone)
+         data = data.filter(receiver__icontains=f'"{phone}"')
 
     # Filter by message ID
     if message_id:
         filters_applied = True
-        data = data.filter(user_messageId__icontains=message_id)
-        print(data)
+        data = data.filter(user_messageId__icontains=message_id)       
 
     # Filter by user (username string)
     if username:
         try:
-            auth_user = CustomUser.objects.get(username__icontains=username)
+            auth_user = CustomUser.objects.filter(username=username).first()
             data = data.filter(user=auth_user)
         except CustomUser.DoesNotExist:
             data = data.none() 
