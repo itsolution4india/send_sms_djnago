@@ -111,6 +111,7 @@ class SendSmsApiResponse(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     status = models.CharField(max_length=20)
+    main_status = models.CharField(max_length=20, default='SUCCESS')
     description = models.TextField()
     content_type = models.IntegerField()
     errorCode = models.IntegerField()
