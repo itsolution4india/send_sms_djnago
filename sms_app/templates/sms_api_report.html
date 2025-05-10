@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container mt-5">
     <h4>SMS API Report</h4>
-    
+
     <!-- Date Range Filter Form -->
     <form method="GET" class="mb-4">
         <div class="row">
@@ -26,185 +26,150 @@
         </div>
     </form>
 
-    <div class="card p-3 mb-3" style="width: 100%;height:400px;">
+    <!-- Line Chart for Daily SMS Count -->
+    <div class="card p-3 mb-3" style="width: 100%; height:400px;">
         <canvas id="smsDateLineChart" style="width: 100%; height: 100%;"></canvas>
-      </div>
+    </div>
 
- 
-    <!-- Statistics Table -->
+    <!-- Statistics Table and Buttons -->
     <div class="row">
         <div class="col-md-6 card p-2">
             <table class="table table-bordered">
                 <tbody>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Server Name</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.campaign_name }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Status</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.status }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Total Error Code</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.total_error_code }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">SMS Count</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.sms_count }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">No. of Promotional SMS</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.promotional_sms }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">No. of Transactional SMS</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.transactional_sms }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Reach</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.reach }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Total Amount Spent</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ stats.total_amount }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">Start Date</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ start_date|date:'Y-m-d' }}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">End Date</p>
-                        </td>
-                        <td>
-                            <p class="text-sm font-weight-bold mb-0">{{ end_date|date:'Y-m-d' }}</p>
-                        </td>
-                    </tr>
+                    <tr><td>Server Name</td><td>{{ stats.campaign_name }}</td></tr>
+                    <tr><td>Status</td><td>{{ stats.status }}</td></tr>
+                    <tr><td>Total Error Code</td><td>{{ stats.total_error_code }}</td></tr>
+                    <tr><td>SMS Count</td><td>{{ stats.sms_count }}</td></tr>
+                    <tr><td>Promotional SMS</td><td>{{ stats.promotional_sms }}</td></tr>
+                    <tr><td>Transactional SMS</td><td>{{ stats.transactional_sms }}</td></tr>
+                    <tr><td>Reach</td><td>{{ stats.reach }}</td></tr>
+                    <tr><td>Total Amount Spent</td><td>{{ stats.total_amount }}</td></tr>
+                    <tr><td>Start Date</td><td>{{ start_date|date:'Y-m-d' }}</td></tr>
+                    <tr><td>End Date</td><td>{{ end_date|date:'Y-m-d' }}</td></tr>
                 </tbody>
             </table>
         </div>
-        
-        <!-- Charts Container -->
-        <div class="col-md-6 card p-2">
-            <div class="chart-container" style="position: relative; height:60vh; width:100%; margin: auto;">
-                <canvas id="smsTypeChart" style="margin: auto;"></canvas>
+
+        <!-- Toggle Buttons -->
+        <div class="col-md-6">
+        <div class="card">
+            <div class="d-flex justify-content-center my-2">
+                <button class="btn btn-outline-primary mx-2" onclick="showChart('smsType')">SMS Type</button>
+                <button class="btn btn-outline-success mx-2" onclick="showChart('delivery')">Delivery Status</button>
+            </div>
+
+            <!-- Pie Chart Containers -->
+            <div class="p-3 mb-2 " id="smsTypeChartContainer" style="display: none; height: 400px;">
+                <canvas id="smsTypeChart" style="width: 100%; height: 100%;margin-left: 100px;"></canvas>
+            </div>
+
+            <div class="p-3 mb-2 " id="deliveryChartContainer" style="display: none; height: 400px;">
+                <canvas id="deliveryChart" style="width: 100%; height: 100%;margin-left: 100px;"></canvas>
+            </div>
             </div>
         </div>
     </div>
 </div>
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- JSON Data for JavaScript -->
 {{ date_labels|json_script:"date-labels" }}
 {{ sms_counts|json_script:"sms-counts" }}
+{{ sms_type_data.labels|json_script:"sms-type-labels" }}
+{{ sms_type_data.counts|json_script:"sms-type-counts" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const labels = {{ date_labels|safe }};
-    const data = {{ sms_counts|safe }};
+document.addEventListener("DOMContentLoaded", function () {
+    // Line Chart
+    const dateLabels = JSON.parse(document.getElementById('date-labels').textContent);
+    const smsCounts = JSON.parse(document.getElementById('sms-counts').textContent);
 
-    const ctx = document.getElementById('smsDateLineChart').getContext('2d');
-
-    new Chart(ctx, {
+    new Chart(document.getElementById('smsDateLineChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: labels,
+            labels: dateLabels,
             datasets: [{
                 label: 'SMS Sent Per Day',
-                data: data,
+                data: smsCounts,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.3,
                 fill: false,
                 pointRadius: 5,
-                pointBackgroundColor: 'rgb(75, 192, 192)',
-                pointHoverRadius: 7
+                pointBackgroundColor: 'rgb(75, 192, 192)'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true
-                }
-            },
+            plugins: { legend: { display: true }},
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'SMS Count'
-                    }
-                }
+                x: { title: { display: true, text: 'Date' }},
+                y: { beginAtZero: true, title: { display: true, text: 'SMS Count' }}
             }
         }
     });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // SMS Type Pie Chart
-    var ctx = document.getElementById('smsTypeChart').getContext('2d');
-    var smsTypeChart = new Chart(ctx, {
+
+    // Pie Chart Data
+    const smsTypeLabels = JSON.parse(document.getElementById('sms-type-labels').textContent);
+    const smsTypeCounts = JSON.parse(document.getElementById('sms-type-counts').textContent);
+    const deliveredCount = {{ delivered_count|default:0 }};
+    const failedCount = {{ failed_count|default:0 }};
+
+    // Initialize both pie charts (hidden initially)
+    window.smsTypeChart = new Chart(document.getElementById('smsTypeChart').getContext('2d'), {
         type: 'pie',
         data: {
-            labels: {{ sms_type_data.labels|safe }},
+            labels: smsTypeLabels,
             datasets: [{
-                data: {{ sms_type_data.counts|safe }},
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)'
-                ]
+                data: smsTypeCounts,
+                backgroundColor: ['rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)']
             }]
         },
         options: {
             responsive: true,
-            title: {
-                display: true,
-                text: 'SMS Type Distribution'
+            plugins: {
+                title: { display: true, text: 'SMS Type Distribution' },
+                legend: { position: 'bottom' }
             }
         }
     });
+
+    window.deliveryChart = new Chart(document.getElementById('deliveryChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: ['Delivered', 'Failed'],
+            datasets: [{
+                data: [deliveredCount, failedCount],
+                backgroundColor: ['#90EE90', '#F75D59']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'Delivered vs Failed Messages' },
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Default: Show SMS Type chart
+    showChart('smsType');
 });
+
+// Toggle Chart Visibility
+function showChart(type) {
+    const smsType = document.getElementById('smsTypeChartContainer');
+    const delivery = document.getElementById('deliveryChartContainer');
+    if (type === 'smsType') {
+        smsType.style.display = 'block';
+        delivery.style.display = 'none';
+    } else {
+        smsType.style.display = 'none';
+        delivery.style.display = 'block';
+    }
+}
 </script>
-{% endblock %}
 {% endblock %}

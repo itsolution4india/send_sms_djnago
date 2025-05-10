@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook, ApiCredentials
+from .models import CustomUser, CoinHistory, Account, CampaignDetails, ReportDetails, SendSmsApiResponse, Webhook, ApiCredentials, MessageStatus
 from .forms import CoinHistoryForm, WebhookForm
 import csv
 import secrets
@@ -618,7 +618,11 @@ def sms_api_report(request):
 # Prepare chart data
     date_labels = [entry['date'].strftime('%Y-%m-%d') for entry in filtered_sms]
     sms_counts = [entry['sms_count'] for entry in filtered_sms]
+    delivered_count = MessageStatus.objects.filter(status='SUCCESS', user=request.user).count()
+    failed_count = MessageStatus.objects.filter(status='FAILED', user=request.user).count()
+  
         
+  
     context = {
         'stats': stats,
         'sms_type_data': sms_type_data,
@@ -626,6 +630,9 @@ def sms_api_report(request):
         'end_date': end_date,
         'date_labels': date_labels,
         'sms_counts': sms_counts,
+        'delivered_count': delivered_count,
+        'failed_count': failed_count,
+     
     }
     
     return render(request, 'sms_api_report.html', context)
