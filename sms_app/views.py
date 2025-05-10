@@ -670,6 +670,11 @@ def sms_api_report(request):
         .annotate(sms_count=Sum('user_msgCount'))
         .order_by('date')
     )
+    queryset2 = MessageStatus.objects.filter(
+        last_checked_at__date__range=[start_date, end_date],
+        user=request.user
+    )
+    print(queryset2,"this is query set 2:")
     if start_date and end_date:
          filtered_sms = [entry for entry in date_wise_sms if start_date <= entry['date'] <= end_date]
     else:
@@ -678,9 +683,9 @@ def sms_api_report(request):
 # Prepare chart data
     date_labels = [entry['date'].strftime('%Y-%m-%d') for entry in filtered_sms]
     sms_counts = [entry['sms_count'] for entry in filtered_sms]
-    delivered_count = MessageStatus.objects.filter(status='SUCCESS', user=request.user).count()
-    failed_count = MessageStatus.objects.filter(status='FAILED', user=request.user).count()
-  
+    delivered_count = queryset2.filter(status='SUCCESS', user=request.user).count()
+    failed_count = queryset2.filter(status='FAILED', user=request.user).count()
+
         
   
     context = {
