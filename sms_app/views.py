@@ -458,7 +458,16 @@ def profile_view(request):
 def api_documentation(request):
     if not check_user_permission(request.user, 'can_sms_api_reports'):
         return redirect("access_denide")
-    return render(request, 'api_documentation.html')
+    
+    user=CustomUser.objects.get(email=request.user.email)
+    api_token=ApiCredentials.objects.get(user=request.user).token
+    context={
+        'username':user.username,
+        'senderId':user.sender_id.sender_id,
+        'apitoken':api_token
+    }
+     
+    return render(request, 'api_documentation.html',context)
 
 @login_required   
 def download_report_csv(request):

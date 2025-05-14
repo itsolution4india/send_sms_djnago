@@ -3,6 +3,7 @@
 {% block content %}
 
 {% block extra_css %}
+
 <style>
     body {
         background-color: #f4f6f9;
@@ -14,7 +15,7 @@
     .curl-code {
         position: relative;
     }
-    .copy-btn {
+    .buton {
         position: absolute;
         top: 10px;
         right: 10px;
@@ -93,7 +94,10 @@
                                         <pre><code id="tokenCurl">curl -X POST https://api.wtsdealnow.com/auth/token \
 -H "Content-Type: application/json" \
 -d '{"username": "your_username", "password": "your_password"}'</code></pre>
+<div class="buton" style="display: flex;gap: 5px;">
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('tokenCurl')">Copy</button>
+                                        <button class="btn btn-primary copy-btn" onclick="showCurlForm('apitoken')" >Generate cURL</button>
+</div>
                                     </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
@@ -156,7 +160,10 @@
                                     <div class="curl-code position-relative">
                                         <pre><code id="refreshCurl">curl -X POST https://api.wtsdealnow.com/auth/token/refresh \
 -H "Authorization: Bearer your_refresh_token"</code></pre>
+<div class="buton" style="display: flex;gap: 5px;">
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('refreshCurl')">Copy</button>
+                                        <button class="btn btn-primary copy-btn" onclick="showCurlForm('refreshtoken')" >Generate cURL</button>
+                                    </div>
                                     </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
@@ -247,6 +254,7 @@
                                           </table>                                          
 
                                     <h6>Sample Promotional cURL Request</h6>
+                                    
                                     <div class="curl-code position-relative">
                                         <pre><code id="smsCurl">curl -X POST https://api.wtsdealnow.com/sms/send-promotional \
 -H "Authorization: Bearer your_refresh_token" \
@@ -259,7 +267,10 @@
     "msgType": "P",
     "requestType": "S/B"
 }'</code></pre>
+<div class="buton" style="display: flex;gap: 5px;">
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
+                                        <button class="btn btn-primary copy-btn" onclick="showCurlForm('P')" >Generate cURL</button>
+                                        </div>
                                     </div>
                                     <h6>Sample Transactional cURL Request</h6>
                                     <div class="curl-code position-relative">
@@ -274,9 +285,11 @@
   "msgType": "T",
   "requestType": "S/B"
 }'</code></pre>
-                                      <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
-                                  </div>
+<div class="buton" style="display: flex;gap: 5px;">                                      <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('smsCurl')">Copy</button>
+                                      <button class="btn btn-primary" onclick="showCurlForm('T')" >Generate cURL</button>
+</div>
 
+                                  </div>
                                     <h6 class="mt-3">Successful Response</h6>
                                     <pre><code>{
     "status": "SUCCESS",
@@ -344,6 +357,44 @@
                             </div>
                         </div>
 
+<!-- modal -->
+  <div class="modal fade" id="curlModal" tabindex="-1">
+        <div class="modal-dialog modal-lg m-auto">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Generate cURL Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="curlForm">
+                        <div class="mb-3">
+                            <label class="form-label">User ID</label>
+                            <input type="text" class="form-control" name="user_id" value="{{ username }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Api Token</label>
+                            <input type="text" class="form-control" name="apitoken" value="{{ apitoken }}" required>
+                        </div>
+                        
+                        <div id="additionalFields"></div>
+                    </form>
+                    <div id="curlResult" style="display: none;">
+                        <h6 class="mt-4">Generated cURL Request:</h6>
+                        <div class="code-block position-relative">
+                            <pre id="curlCodes"></pre>
+                            <div class="buton">
+                            <button class="btn btn-sm btn-light copy-btn1 " onclick="copyToClipboard1()">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="generateCurl()">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
                         <!-- Message Status Endpoint -->
                         <div class="tab-pane fade" id="v-pills-status" role="tabpanel">
                             <div class="card endpoint-card">
@@ -353,7 +404,6 @@
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
                                     <code>GET /sms/status</code>
-
                                     <h6 class="mt-3">Request Headers</h6>
                                     <table class="table-bordered">
                                         <thead>
@@ -404,7 +454,10 @@
                                     <div class="curl-code position-relative">
                                         <pre><code id="statusCurl">curl -X GET "https://api.wtsdealnow.com/sms/status?sender=SENDER_ID&messageId=61327877333215XXXX&receiver=8801833XXXXXX" \
 -H "Authorization: Bearer token"</code></pre>
+<div class="buton" style="display: flex;gap: 5px;">
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('statusCurl')">Copy</button>
+                                         <button class="btn btn-primary" onclick="showCurlForm('checkstatus')" >Generate cURL</button>
+</div>
                                     </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
@@ -482,7 +535,7 @@
                                 <div class="card-body">
                                     <h6>Endpoint</h6>
                                     <code>GET /account/balance</code>
-
+                                    
                                     <h6 class="mt-3">Request Headers</h6>
                                     <table class="table-bordered">
                                         <thead>
@@ -525,7 +578,10 @@
                                     <div class="curl-code position-relative">
                                         <pre><code id="balanceCurl">curl -X GET "https://api.wtsdealnow.com/account/balance?username=YOUR_USERNAME" \
 -H "Authorization: Bearer YOUR_ACCESS_TOKEN"</code></pre>
+<div class="buton" style="display: flex;gap: 5px;">
                                         <button class="btn btn-secondary copy-btn" onclick="copyToClipboard('balanceCurl')">Copy</button>
+                                        <button class="btn btn-primary" onclick="showCurlForm('checkbalance')" >Generate cURL</button>
+                                        </div>
                                     </div>
 
                                     <h6 class="mt-3">Successful Response</h6>
@@ -686,6 +742,188 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+   <script>
+    
+  
+    let currentEndpoint = '';
+    const modal = new bootstrap.Modal(document.getElementById('curlModal'));
+    const senderId = "{{ senderId|escapejs }}";
+    const apitoken="{{ apitoken|escapejs }}"
+    const username="{{ username|escapejs }}"
+    endpointFields = {
+        'P': [{name:"sender",label:'Sender Id'},
+            { name: 'contentType', label: 'Content-Type', type: 'select', options: ['1', '2'] },
+            { name: 'msgType', label: 'Message-Type', type: 'select', options: ['P'] },
+            { name: 'requestType', label: 'Request Type' ,type: 'select', options: ['S','B']},
+            { name: 'receiver', label: 'Receiver' },
+            { name: 'content', label: 'Content', type: 'textarea' }
+        ],
+        'T':[
+          {name:"sender",label:'Sender Id'},
+           { name: 'contentType', label: 'Content-Type', type: 'select', options: ['1', '2'] },
+            { name: 'msgType', label: 'Message-Type', type: 'select', options: ['T'] },
+            { name: 'requestType', label: 'Request Type' ,type: 'select', options: ['S','B']},
+            { name: 'receiver', label: 'Receiver' },
+            { name: 'content', label: 'Content', type: 'textarea' }
+
+        ],
+        'apitoken':[
+          {name:'password',label:'Password'}
+        ],
+        'checkstatus':[
+        
+        {name:'messageId',label:'Message Id'},
+         { name: 'receiver', label: 'Receiver' },
+        ],
+        'checkbalance':[
+
+        ],
+        'refreshtoken':[
+
+        ]
+
+    };
+
+    function showCurlForm(endpoint) {
+        currentEndpoint = endpoint;
+        const additionalFields = document.getElementById('additionalFields');
+        additionalFields.innerHTML = '';
+
+        endpointFields[endpoint].forEach(field => {
+            let fieldHtml = `<div class="mb-3"><label class="form-label">${field.label}</label>`;
+
+            if (field.type === 'select') {
+    fieldHtml += `<select class="form-select p-3" name="${field.name}" required>`;
+    field.options.forEach(option => {
+        fieldHtml += `<option value="${option}">${option}</option>`;
+    });
+    fieldHtml += `</select>`;
+} else if (field.type === 'textarea') {
+    fieldHtml += `<textarea class="form-control" name="${field.name}" rows="4" required></textarea>`;
+} else {
+    if (field.name === 'sender') {
+        fieldHtml += `<input type="text" class="form-control" name="${field.name}" value="${senderId}" readonly required>`;
+    } else {
+        fieldHtml += `<input type="text" class="form-control" name="${field.name}" required>`;
+    }
+}
+            fieldHtml += `</div>`;
+            additionalFields.innerHTML += fieldHtml;
+        });
+
+        document.getElementById('curlResult').style.display = 'none';
+        modal.show();
+    }
+
+    function generateCurl(){
+     
+       const form = document.getElementById('curlForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            let url, requestData;
+            if(currentEndpoint=='P'){
+              url='https://api.wtsdealnow.com/sms/send-promotional'
+              requestData = {
+                    sender: senderId,
+                    content: data.content,
+                    contentType: data.contentType,
+                    msgType: data.msgType,
+                    requestType: data.requestType,
+                    receiver: data.receiver ? data.receiver.split(',').map(num => num.trim()) : [],
+                    
+                };
+                  const curlCommand = `curl --location '${url}' \\
+  -H "Authorization: Bearer ${apitoken}" \\
+--header 'Content-Type: application/json' \\
+--data '${JSON.stringify(requestData, null, 2)}'`;
+
+            document.getElementById('curlCodes').textContent = curlCommand;
+            document.getElementById('curlResult').style.display = 'block';
+
+            
+            }
+            else if(currentEndpoint=='T'){
+              url='https://api.wtsdealnow.com/sms/send-transactional'
+              requestData = {
+                    sender: senderId,
+                    content: data.content,
+                    contentType: data.contentType,
+                    msgType: data.msgType,
+                    requestType: data.requestType,
+                    receiver: data.receiver ? data.receiver.split(',').map(num => num.trim()) : [],
+                    
+                };
+                  const curlCommand = `curl --location '${url}' \\
+  -H "Authorization: Bearer ${apitoken}" \\
+--header 'Content-Type: application/json' \\
+--data '${JSON.stringify(requestData, null, 2)}'`;
+
+            document.getElementById('curlCodes').textContent = curlCommand;
+            document.getElementById('curlResult').style.display = 'block';
+
+            
+            }
+            else if(currentEndpoint=='apitoken'){
+              url='https://api.wtsdealnow.com/auth/token'
+              
+              requestData={
+                username:username,
+                
+                password:data.password
+              }
+                const curlCommand = `curl --location '${url}' \\
+  -H "Authorization: Bearer ${apitoken}" \\
+--header 'Content-Type: application/json' \\
+--data '${JSON.stringify(requestData, null, 2)}'`;
+
+            document.getElementById('curlCodes').textContent = curlCommand;
+            document.getElementById('curlResult').style.display = 'block';
+
+            
+            }
+            else if(currentEndpoint=='checkstatus'){
+              url = `https://api.wtsdealnow.com/sms/status?sender=${senderId}&messageId=${data.messageId}&receiver=${data.receiver ? data.receiver.split(',').map(num => num.trim()) : []}`;
+              const curlCommand = `curl --location "${url}" \\
+-H "Authorization: Bearer ${apitoken}"`;
+  document.getElementById('curlCodes').textContent = curlCommand;
+    document.getElementById('curlResult').style.display = 'block';
+            }
+
+            else if(currentEndpoint=='checkbalance'){
+              url=`https://api.wtsdealnow.com/account/balance?username=${username}`;
+              const curlCommand = `curl --location "${url}" \\
+-H "Authorization: Bearer ${apitoken}"`;
+  document.getElementById('curlCodes').textContent = curlCommand;
+    document.getElementById('curlResult').style.display = 'block';
+              
+
+            }
+            else if(currentEndpoint=='refreshtoken'){
+              url='https://api.wtsdealnow.com/auth/token/refresh';
+              const curlCommand = `curl --location "${url}" \\
+-H "Authorization: Bearer ${apitoken}"`;
+  document.getElementById('curlCodes').textContent = curlCommand;
+    document.getElementById('curlResult').style.display = 'block';
+              
+
+            }
+
+    }
+    function copyToClipboard1() {
+            const curlCode = document.getElementById('curlCodes').textContent;
+            navigator.clipboard.writeText(curlCode).then(() => {
+                const copyBtn = document.querySelector('.copy-btn1');
+                
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+
+</script>
+
     <script>
         function copyToClipboard(elementId) {
             const copyText = document.getElementById(elementId);
